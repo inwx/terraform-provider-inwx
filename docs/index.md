@@ -32,7 +32,7 @@ resource "inwx_domain" "example_com" {
   // domain configuration
   // ...
   contacts {
-    // references to terraform managed contact
+    // references to terraform managed contact "example_person"
     registrant = inwx_domain_contact.example_person.id
     admin  = inwx_domain_contact.example_person.id
     tech  = inwx_domain_contact.example_person.id

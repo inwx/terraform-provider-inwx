@@ -22,7 +22,9 @@ resource "inwx_domain" "example_com" {
     billing  = 2147483647 // id of contact
   }
   extra_data = {
-    "WHOIS-PROTECTION": true // Enable whois protection
+    // Enable e.g. whois protection
+    "WHOIS-CURRENCY": "EUR",
+    "WHOIS-PROTECTION": "1" // 1 == bool true
   }
 }
 ```
@@ -52,13 +54,16 @@ resource "inwx_domain" "example_com" {
   renewal_mode = "AUTOEXPIRE"
   transfer_lock = true
   contacts {
+    // references to terraform managed contact "example_person"
     registrant = inwx_domain_contact.example_person.id
     admin  = inwx_domain_contact.example_person.id
     tech  = inwx_domain_contact.example_person.id
     billing  = inwx_domain_contact.example_person.id
   }
   extra_data = {
-    "WHOIS-PROTECTION": true // Enable whois protection
+    // Enable e.g. whois protection
+    "WHOIS-CURRENCY": "EUR",
+    "WHOIS-PROTECTION": "1" // 1 == bool true
   }
 }
 ```
