@@ -1,4 +1,4 @@
-module github.com/inwx/terraform
+module github.com/inwx/terraform-provider-inwx
 
 go 1.18
 
