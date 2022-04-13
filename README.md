@@ -11,7 +11,7 @@ INWX Terraform Provider is a plugin for Terraform that allows registration and m
 
 Documentation
 ------
-You can view a detailed description of all resources under [docs/resources](docs/resources) or at https://registry.terraform.io/providers/inwx/inwx/.
+You can find a detailed description of the provider and all resources under [docs/](docs/) or at https://registry.terraform.io/providers/inwx/inwx/.
 
 -------
 
