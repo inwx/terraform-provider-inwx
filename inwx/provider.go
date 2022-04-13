@@ -57,9 +57,8 @@ func configureContext(ctx context.Context, data *schema.ResourceData) (interface
 		return nil, diags
 	}
 	logger := logr.Discard()
-	debug := data.Get("debug").(bool)
 
-	client, err := api.NewClient(username, password, apiUrl, &logger, debug)
+	client, err := api.NewClient(username, password, apiUrl, &logger, false)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
