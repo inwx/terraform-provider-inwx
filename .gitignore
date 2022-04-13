@@ -1,5 +1,5 @@
 .env
 workspace_test
-README.md
 terraform
 .idea
+dist
