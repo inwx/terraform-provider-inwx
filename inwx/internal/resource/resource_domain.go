@@ -199,7 +199,7 @@ func resourceDomainRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("nameservers", resData["ns"])
 	d.Set("period", resData["period"])
 	d.Set("renewal_mode", resData["renewalMode"])
-	d.Set("transfer_lock", resData["transferLock"] == 1) // convert 1 to true
+	d.Set("transfer_lock", resData["transferLock"] == 1.0) // convert 1.0 to true. Must be a float!
 
 	contacts := map[string]interface{}{}
 	contacts["registrant"] = int(resData["registrant"].(float64))
@@ -261,7 +261,7 @@ func resourceDomainUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 		})
 		return diags
 	}
-	if call.Code() != api.COMMAND_SUCCESSFUL {
+	if call.Code() != api.COMMAND_SUCCESSFUL && call.Code() != api.COMMAND_SUCCESSFUL_PENDING {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not get domain info",
