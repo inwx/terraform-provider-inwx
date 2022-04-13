@@ -153,11 +153,11 @@ func resourceDomainCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		})
 		return diags
 	}
-	if call.Code() != api.COMMAND_SUCCESSFUL_PENDING {
+	if call.Code() != api.COMMAND_SUCCESSFUL && call.Code() != api.COMMAND_SUCCESSFUL_PENDING {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not create domain",
-			Detail:   fmt.Sprintf("API response not status code 1001. Got response: %s", call.ApiError()),
+			Detail:   fmt.Sprintf("API response not status code 1000 or 1001. Got response: %s", call.ApiError()),
 		})
 		return diags
 	}
@@ -265,7 +265,7 @@ func resourceDomainUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not get domain info",
-			Detail:   fmt.Sprintf("API response not status code 1000. Got response: %s", call.ApiError()),
+			Detail:   fmt.Sprintf("API response not status code 1000 or 1001. Got response: %s", call.ApiError()),
 		})
 		return diags
 	}
@@ -290,11 +290,11 @@ func resourceDomainDelete(ctx context.Context, d *schema.ResourceData, meta inte
 		})
 		return diags
 	}
-	if call.Code() != api.COMMAND_SUCCESSFUL {
+	if call.Code() != api.COMMAND_SUCCESSFUL && call.Code() != api.COMMAND_SUCCESSFUL_PENDING {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not delete domain",
-			Detail:   fmt.Sprintf("API response not status code 1000. Got response: %s", call.ApiError()),
+			Detail:   fmt.Sprintf("API response not status code 1000 pr 1001. Got response: %s", call.ApiError()),
 		})
 		return diags
 	}
