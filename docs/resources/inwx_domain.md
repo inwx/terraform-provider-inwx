@@ -23,7 +23,6 @@ resource "inwx_domain" "example_com" {
   }
   extra_data = {
     // Enable e.g. whois protection
-    "WHOIS-CURRENCY": "EUR",
     "WHOIS-PROTECTION": "1" // 1 == bool true
   }
 }
@@ -62,7 +61,6 @@ resource "inwx_domain" "example_com" {
   }
   extra_data = {
     // Enable e.g. whois protection
-    "WHOIS-CURRENCY": "EUR",
     "WHOIS-PROTECTION": "1" // 1 == bool true
   }
 }
@@ -96,4 +94,27 @@ INWX Domains can be imported using the domain name, e.g.,
 
 ```
 $ terraform import inwx_domain.example_com "example.com"
+```
+
+## Caveats
+
+### Extra Data
+
+When extra data is set, e.g. `WHOIS-PROTECTION`, our system sometimes adds other readonly extra data to the domain.
+In this example `WHOIS-CURRENCY` is added to the domain. Terraform cannot manage this extra data, so it is recommended
+to ignore these side effects explicitly as they occur:
+
+```terraform
+resource "inwx_domain" "example_com" {
+  // ...
+  extra_data = {
+    "WHOIS-PROTECTION": "1"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      extra_data["WHOIS-CURRENCY"], // ignore WHOIS-CURRENCY
+    ]
+  }
+}
 ```
