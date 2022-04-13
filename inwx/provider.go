@@ -1,4 +1,4 @@
-package provider
+package inwx
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/inwx/terraform/internal"
-	"github.com/inwx/terraform/internal/api"
+	"github.com/inwx/terraform/inwx/internal/api"
+	"github.com/inwx/terraform/inwx/internal/resource"
 	"net/url"
 )
 
@@ -15,33 +15,28 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"api_url": {
-				Type:        schema.TypeString,
-				Description: "",
-				Optional:    true,
-				Default:     "https://api.domrobot.com/jsonrpc/",
+				Type: schema.TypeString,
+				Description: "URL of the RPC API endpoint. Use `https://api.domrobot.com/jsonrpc/` " +
+					"for production and `https://api.ote.domrobot.com/jsonrpc/` for tests",
+				Optional: true,
+				Default:  "https://api.domrobot.com/jsonrpc/",
 			},
 			"username": {
 				Type:        schema.TypeString,
-				Description: "",
+				Description: "Login username of the api",
 				Required:    true,
 				Sensitive:   true,
 			},
 			"password": {
 				Type:        schema.TypeString,
-				Description: "",
+				Description: "Login password of the api",
 				Required:    true,
 				Sensitive:   true,
 			},
-			"debug": {
-				Type:        schema.TypeBool,
-				Description: "",
-				Optional:    true,
-				Default:     false,
-			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"inwx_domain":  internal.DomainResource(),
-			"inwx_contact": internal.ContactResource(),
+			"inwx_domain":         resource.DomainResource(),
+			"inwx_domain_contact": resource.DomainContactResource(),
 		},
 		ConfigureContextFunc: configureContext,
 	}
@@ -91,7 +86,8 @@ func configureContext(ctx context.Context, data *schema.ResourceData) (interface
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not configure context",
-			Detail:   fmt.Sprintf("Could not authenticate at api via account.login. Got response: %s", call.ApiError()),
+			Detail: fmt.Sprintf("Could not authenticate at api via account.login. "+
+				"Got response: %s", call.ApiError()),
 		})
 		return nil, diags
 	}

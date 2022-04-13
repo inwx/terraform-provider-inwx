@@ -1,4 +1,4 @@
-package internal
+package resource
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/inwx/terraform/internal/api"
+	"github.com/inwx/terraform/inwx/internal/api"
 	"strconv"
 	"strings"
 )
@@ -27,7 +27,7 @@ type Contact struct {
 	WhoisProtection bool
 }
 
-func ContactResource() *schema.Resource {
+func DomainContactResource() *schema.Resource {
 	validContactTypes := []string{
 		"ORG",
 		"PERSON",
@@ -72,7 +72,7 @@ func ContactResource() *schema.Resource {
 			"organization": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The legal name of the organisation. Required for types other than person",
+				Description: "The legal name of the organization. Required for types other than person",
 			},
 			"street_address": {
 				Type:        schema.TypeString,
@@ -82,7 +82,7 @@ func ContactResource() *schema.Resource {
 			"city": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "City for the contact",
+				Description: "City of the contact",
 			},
 			"postal_code": {
 				Type:        schema.TypeString,
@@ -92,13 +92,13 @@ func ContactResource() *schema.Resource {
 			"state_province": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "State name of the contact",
+				Description: "State/Province name of the contact",
 			},
 			"country_code": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ValidateDiagFunc: validateCountryCode,
-				Description:      "Two letter country code of the contact",
+				Description:      "Country code of the contact. Must be two characters",
 			},
 			"phone_number": {
 				Type:        schema.TypeString,

@@ -1,4 +1,4 @@
-package internal
+package resource
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/inwx/terraform/internal/api"
+	"github.com/inwx/terraform/inwx/internal/api"
 	"strings"
 )
 
@@ -41,12 +41,12 @@ func DomainResource() *schema.Resource {
 					MinItems: 1,
 				},
 				Optional:    true,
-				Description: "Set of nameservers for the domain",
+				Description: "Set of nameservers of the domain",
 			},
 			"period": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Registration period",
+				Description: "Registration period of the domain",
 			},
 			"renewal_mode": {
 				Type:        schema.TypeString,
@@ -74,14 +74,15 @@ func DomainResource() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				Description: "Should the domain have transfer lock enabled",
+				Description: "Whether the domain transfer lock should be enabled",
 			},
 			"contacts": {
-				Type:     schema.TypeSet,
-				Required: true,
-				MaxItems: 1,
-				MinItems: 1,
-				Elem:     contactsSchemaResource(),
+				Type:        schema.TypeSet,
+				Required:    true,
+				MaxItems:    1,
+				MinItems:    1,
+				Elem:        contactsSchemaResource(),
+				Description: "Contacts of the domain",
 			},
 			"extra_data": {
 				Type:        schema.TypeMap,
@@ -98,20 +99,24 @@ func contactsSchemaResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"registrant": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Id of the registrant contact",
 			},
 			"admin": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Id of the admin contact",
 			},
 			"tech": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Id of the tech contact",
 			},
 			"billing": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Id of the billing contact",
 			},
 		},
 	}
@@ -194,7 +199,7 @@ func resourceDomainRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("nameservers", resData["ns"])
 	d.Set("period", resData["period"])
 	d.Set("renewal_mode", resData["renewalMode"])
-	d.Set("transfer_lock", resData["transferLock"])
+	d.Set("transfer_lock", resData["transferLock"] == 1) // convert 1 to true
 
 	contacts := map[string]interface{}{}
 	contacts["registrant"] = int(resData["registrant"].(float64))
