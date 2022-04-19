@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/api"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -194,7 +195,23 @@ func resourceContactCreate(ctx context.Context, data *schema.ResourceData, meta 
 		return diags
 	}
 
-	data.SetId(strconv.Itoa(int(call["resData"].(map[string]interface{})["id"].(float64))))
+	rawId := call["resData"].(map[string]interface{})["id"]
+	switch rawId.(type) {
+	case string:
+		// When contact already exists: id = string
+		data.SetId(rawId.(string))
+	case float64:
+		// When contact already exists: id = float64 ...
+		data.SetId(strconv.Itoa(int(rawId.(float64))))
+	default:
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unknown type",
+			Detail:   fmt.Sprintf("API returned unknown type for contact id: %s", reflect.TypeOf(rawId)),
+		})
+		return diags
+	}
+
 	return diags
 }
 
