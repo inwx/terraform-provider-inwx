@@ -1,7 +1,6 @@
 # Resource: inwx_domain
 
-Description of what this resource does, with links to official
-app/service documentation.
+Provides a INWX domain resource
 
 ## Example Usage
 
