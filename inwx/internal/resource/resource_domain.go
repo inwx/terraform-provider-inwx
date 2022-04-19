@@ -230,7 +230,7 @@ func resourceDomainUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	if d.HasChange("nameservers") {
-		parameters["ns"] = d.Get("nameservers")
+		parameters["ns"] = d.Get("nameservers").(*schema.Set).List()
 	}
 	if d.HasChange("period") {
 		parameters["period"] = d.Get("period")
