@@ -13,7 +13,7 @@ resource "inwx_domain" "example_com" {
     "ns2.inwx.de"
   ]
   period = "1Y"
-  renewal_mode = "AUTOEXPIRE"
+  renewal_mode = "AUTORENEW"
   transfer_lock = true
   contacts {
     registrant = 2147483647 // id of contact
