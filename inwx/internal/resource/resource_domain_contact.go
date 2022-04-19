@@ -201,7 +201,7 @@ func resourceContactCreate(ctx context.Context, data *schema.ResourceData, meta 
 		// When contact already exists: id = string
 		data.SetId(rawId.(string))
 	case float64:
-		// When contact already exists: id = float64 ...
+		// When contact does not already exist: id = float64 ...
 		data.SetId(strconv.Itoa(int(rawId.(float64))))
 	default:
 		diags = append(diags, diag.Diagnostic{
