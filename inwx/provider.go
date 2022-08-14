@@ -3,12 +3,13 @@ package inwx
 import (
 	"context"
 	"fmt"
+	"net/url"
+
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/api"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/resource"
-	"net/url"
 )
 
 func Provider() *schema.Provider {
@@ -37,6 +38,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"inwx_domain":         resource.DomainResource(),
 			"inwx_domain_contact": resource.DomainContactResource(),
+			"inwx_dnssec_key":     resource.DNSSECKeyResource(),
 		},
 		ConfigureContextFunc: configureContext,
 	}
