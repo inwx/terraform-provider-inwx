@@ -3,3 +3,4 @@ workspace_test
 terraform
 .idea
 dist
+terraform-provider-inwx
