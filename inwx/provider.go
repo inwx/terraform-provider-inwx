@@ -36,9 +36,10 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"inwx_domain":         resource.DomainResource(),
-			"inwx_domain_contact": resource.DomainContactResource(),
-			"inwx_dnssec_key":     resource.DNSSECKeyResource(),
+			"inwx_domain":            resource.DomainResource(),
+			"inwx_domain_contact":    resource.DomainContactResource(),
+			"inwx_dnssec_key":        resource.DNSSECKeyResource(),
+			"inwx_nameserver_record": resource.NameserverRecordResource(),
 		},
 		ConfigureContextFunc: configureContext,
 	}
