@@ -310,8 +310,18 @@ func resourceNameserverRecordUpdate(ctx context.Context, d *schema.ResourceData,
 	var diags diag.Diagnostics
 	client := m.(*api.Client)
 
+	_, id, err := resourceNameserverRecordParseId(d.Id())
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Could not parse id",
+			Detail:   err.Error(),
+		})
+		return diags
+	}
+
 	parameters := map[string]interface{}{
-		"id": d.Id(),
+		"id": id,
 	}
 
 	if d.HasChange("type") {
@@ -377,8 +387,18 @@ func resourceNameserverRecordDelete(ctx context.Context, d *schema.ResourceData,
 	var diags diag.Diagnostics
 	client := m.(*api.Client)
 
+	_, id, err := resourceNameserverRecordParseId(d.Id())
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Could not parse id",
+			Detail:   err.Error(),
+		})
+		return diags
+	}
+
 	parameters := map[string]interface{}{
-		"id": d.Id(),
+		"id": id,
 	}
 
 	if testing, ok := d.GetOk("testing"); ok {
