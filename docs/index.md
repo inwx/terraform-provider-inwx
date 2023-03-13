@@ -21,6 +21,7 @@ provider "inwx" {
   api_url = "https://api.ote.domrobot.com/jsonrpc/"
   username = "example-user"
   password = "redacted"
+  tan = "000000"
 }
 
 // contact used for domain
@@ -51,3 +52,4 @@ resource "inwx_nameserver_record" "example_com" {
 * `api_url` - (Optional) URL of the RPC API endpoint. Use `https://api.domrobot.com/jsonrpc/` for production and `https://api.ote.domrobot.com/jsonrpc/` for testing. Default: `https://api.domrobot.com/jsonrpc/`
 * `username` - (Required) Login username of the api
 * `password` - (Required) Login password of the api
+* `tan` - (Optional) [mobile tan](https://www.inwx.com/en/offer/mobiletan)
