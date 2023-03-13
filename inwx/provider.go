@@ -34,6 +34,12 @@ func Provider() *schema.Provider {
 				Required:    true,
 				Sensitive:   true,
 			},
+			"tan": {
+				Type:        schema.TypeString,
+				Description: "Mobile-TAN to unlock account",
+				Optional:    true,
+				Sensitive:   true,
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"inwx_domain":            resource.DomainResource(),
@@ -92,6 +98,31 @@ func configureContext(ctx context.Context, data *schema.ResourceData) (interface
 				"Got response: %s", call.ApiError()),
 		})
 		return nil, diags
+	}
+
+	call, err = client.Call(ctx, "account.info", map[string]interface{}{})
+
+	if tan, ok := data.GetOk("tan"); ok && call.Code() == 2200 && tan != "" {
+		call, err := client.Call(ctx, "account.unlock", map[string]interface{}{
+			"tan": tan,
+		})
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Could not unlock account",
+				Detail:   fmt.Sprintf("Could not authenticate at api via account.unlock: %w", err),
+			})
+			return nil, diags
+		}
+		if call.Code() != api.COMMAND_SUCCESSFUL {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Could not unlock account",
+				Detail: fmt.Sprintf("Could not authenticate at api via account.unlock. "+
+					"Got response: %s", call.ApiError()),
+			})
+			return nil, diags
+		}
 	}
 
 	return client, diags

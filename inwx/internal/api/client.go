@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-logr/logr"
+	cookiejar "github.com/orirawlings/persistent-cookiejar"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 )
 
@@ -39,12 +39,15 @@ type Client struct {
 	Username   string
 	Password   string
 	Debug      bool
+	jar        *cookiejar.Jar
 }
 
 func NewClient(username string, password string, baseURL *url.URL, logger *logr.Logger, debug bool) (*Client, error) {
 	logger.V(10).Info("initializing new http client")
 
-	jar, err := cookiejar.New(nil)
+	jar, err := cookiejar.New(&cookiejar.Options{
+		PersistSessionCookies: true,
+	})
 	if err != nil {
 		return nil, errors.WithStack(fmt.Errorf("could not create http client cookie jar: %w", err))
 	}
@@ -63,6 +66,7 @@ func NewClient(username string, password string, baseURL *url.URL, logger *logr.
 		username,
 		password,
 		debug,
+		jar,
 	}, nil
 }
 
@@ -78,6 +82,11 @@ func (c *Client) Call(ctx context.Context, method string, parameters map[string]
 	if c.Debug {
 		fmt.Printf("Request (%s): %s", method, requestJsonBody)
 		c.logger.Info(fmt.Sprintf("Request (%s): %s", method, requestJsonBody))
+	}
+
+	err = c.jar.Save()
+	if err != nil {
+		return nil, errors.WithStack(fmt.Errorf("could not save cookies: %w", err))
 	}
 
 	request, err := http.NewRequest("POST", c.BaseURL.String(), bytes.NewReader(requestJsonBody))
@@ -107,6 +116,11 @@ func (c *Client) Call(ctx context.Context, method string, parameters map[string]
 	// Make sure body is valid json before debug message
 	if c.Debug {
 		c.logger.Info(fmt.Sprintf("Request (%s): %s", method, responseBody))
+	}
+
+	err = c.jar.Save()
+	if err != nil {
+		return nil, errors.WithStack(fmt.Errorf("could not save cookies: %w", err))
 	}
 
 	return response, nil
