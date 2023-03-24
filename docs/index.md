@@ -45,6 +45,10 @@ resource "inwx_domain" "example_com" {
 resource "inwx_nameserver_record" "example_com" {
   // nameserver record configuration
 }
+
+resource "inwx_dnssec_key" "example_com" {
+  // dnnsec key configuration
+}
 ```
 
 ## Argument Reference

@@ -1,4 +1,4 @@
-# Resource: inwx_denssec_key
+# Resource: inwx_dnssec_key
 
 Provides a INWX DNSSEC key resource
 
@@ -25,3 +25,9 @@ INWX DNSSEC keys can be imported using the domain name and digest e.g.,
 ```
 $ terraform import inwx_dnssec_key.example_com example.com/4E1243BD22C66E76C2BA9EDDC1F91394E57F9F83
 ```
+
+## Caveats
+
+### Nameservers
+
+Can not be used in conjunction with INWX nameservers.
