@@ -199,7 +199,7 @@ func resourceDomainRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("nameservers", resData["ns"])
 	d.Set("period", resData["period"])
 	d.Set("renewal_mode", resData["renewalMode"])
-	d.Set("transfer_lock", resData["transferLock"] == 1.0) // convert 1.0 to true. Must be a float!
+	d.Set("transfer_lock", resData["transferLock"])
 
 	contacts := map[string]interface{}{}
 	contacts["registrant"] = int(resData["registrant"].(float64))
