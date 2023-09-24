@@ -265,11 +265,14 @@ func resourceNameserverRecordRead(ctx context.Context, d *schema.ResourceData, m
 	for _, record := range records {
 		recordt := record.(map[string]any)
 
-		if recordt["name"].(string)+":"+strconv.Itoa(int(recordt["id"].(float64))) == d.Id() {
-			d.Set("domain", recordt["name"].(string))
+		if d.Get("domain").(string)+":"+strconv.Itoa(int(recordt["id"].(float64))) == d.Id() {
+			d.Set("domain", d.Get("domain").(string))
 			d.Set("type", recordt["type"].(string))
 			d.Set("content", recordt["content"].(string))
 
+			if val, ok := recordt["name"]; ok {
+				d.Set("name", val.(string))
+			}
 			if val, ok := recordt["urlRedirectType"]; ok {
 				d.Set("url_redirect_type", val.(string))
 			}
