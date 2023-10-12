@@ -262,6 +262,7 @@ func resourceContactRead(ctx context.Context, data *schema.ResourceData, meta in
 		data.Set("fax", contact.FaxNumber)
 	}
 	data.Set("email", contact.Email)
+	data.Set("whois_protection", contact.WhoisProtection)
 	if contact.Remarks != "" {
 		data.Set("remarks", contact.Remarks)
 	}
