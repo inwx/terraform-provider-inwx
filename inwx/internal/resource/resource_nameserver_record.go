@@ -365,20 +365,12 @@ func resourceNameserverRecordUpdate(ctx context.Context, d *schema.ResourceData,
 		parameters["testing"] = testing
 	}
 
-	call, err := client.Call(ctx, "nameserver.updateRecord", parameters)
+	err = client.CallNoResponseBody(ctx, "nameserver.updateRecord", parameters)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not update nameserver record",
 			Detail:   err.Error(),
-		})
-		return diags
-	}
-	if call.Code() != api.COMMAND_SUCCESSFUL {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Could not update nameserver record",
-			Detail:   fmt.Sprintf("API response not status code 1000. Got response: %s", call.ApiError()),
 		})
 		return diags
 	}
@@ -408,20 +400,12 @@ func resourceNameserverRecordDelete(ctx context.Context, d *schema.ResourceData,
 		parameters["testing"] = testing
 	}
 
-	call, err := client.Call(ctx, "nameserver.deleteRecord", parameters)
+	err = client.CallNoResponseBody(ctx, "nameserver.deleteRecord", parameters)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not delete nameserver record",
 			Detail:   err.Error(),
-		})
-		return diags
-	}
-	if call.Code() != api.COMMAND_SUCCESSFUL && call.Code() != api.COMMAND_SUCCESSFUL_PENDING {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Could not delete nameserver record",
-			Detail:   fmt.Sprintf("API response not status code 1000 pr 1001. Got response: %s", call.ApiError()),
 		})
 		return diags
 	}
