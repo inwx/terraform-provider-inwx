@@ -70,7 +70,8 @@ func NewClient(username string, password string, baseURL *url.URL, logger *logr.
 	}, nil
 }
 
-func (c *Client) Call(ctx context.Context, method string, parameters map[string]interface{}) (Response, error) {
+
+func (c *Client) _Call(ctx context.Context, method string, parameters map[string]interface{}, expectResponseBody bool) (Response, error) {
 	requestBody := map[string]interface{}{}
 	requestBody["method"] = method
 	requestBody["params"] = parameters
@@ -101,21 +102,24 @@ func (c *Client) Call(ctx context.Context, method string, parameters map[string]
 		return nil, errors.WithStack(fmt.Errorf("could not execute rpc request: %w", err))
 	}
 
-	responseBody, err := ioutil.ReadAll(post.Body)
-	if err != nil {
-		return nil, errors.WithStack(fmt.Errorf("could not read rpc response: %w", err))
-	}
-	fmt.Printf("Response (%s): %s", method, string(responseBody))
-
 	var response map[string]interface{}
-	err = json.Unmarshal(responseBody, &response)
-	if err != nil {
-		return nil, errors.WithStack(fmt.Errorf("could not unmarshal rpc response to json: %w, %s, %s, %s", err, requestJsonBody, c.BaseURL.String(), post.Status))
-	}
+	if expectResponseBody { // not all requests return a response
+		responseBody, err := ioutil.ReadAll(post.Body)
+		if err != nil {
+			return nil, errors.WithStack(fmt.Errorf("could not read rpc response: %w", err))
+		}
+		fmt.Printf("Response (%s): %s", method, string(responseBody))
 
-	// Make sure body is valid json before debug message
-	if c.Debug {
-		c.logger.Info(fmt.Sprintf("Request (%s): %s", method, responseBody))
+
+		err = json.Unmarshal(responseBody, &response)
+		if err != nil {
+			return nil, errors.WithStack(fmt.Errorf("could not unmarshal rpc response to json: %w, %s, %s, %s", err, requestJsonBody, c.BaseURL.String(), post.Status))
+		}
+
+		// Make sure body is valid json before debug message
+		if c.Debug {
+			c.logger.Info(fmt.Sprintf("Request (%s): %s", method, responseBody))
+		}
 	}
 
 	err = c.jar.Save()
@@ -123,11 +127,23 @@ func (c *Client) Call(ctx context.Context, method string, parameters map[string]
 		return nil, errors.WithStack(fmt.Errorf("could not save cookies: %w", err))
 	}
 
-	return response, nil
+	if expectResponseBody {
+		return response, nil
+	}
+	return nil, nil
 }
 
 func (c *Client) CallNoParams(ctx context.Context, method string) (Response, error) {
 	return c.Call(ctx, method, map[string]interface{}{})
+}
+
+func (c *Client) Call(ctx context.Context, method string, parameters map[string]interface{}) (Response, error) {
+	return c._Call(ctx, method, parameters, true)
+}
+
+func (c *Client) CallNoResponseBody(ctx context.Context, method string, parameters map[string]interface{}) (error) {
+	_, err := c._Call(ctx, method, parameters, false)
+	return err
 }
 
 func (c *Client) Logout(ctx context.Context) (Response, error) {
