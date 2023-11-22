@@ -53,7 +53,7 @@ resource "inwx_dnssec_key" "example_com" {
 
 ## Argument Reference
 
-* `api_url` - (Optional) URL of the RPC API endpoint. Use `https://api.domrobot.com/jsonrpc/` for production and `https://api.ote.domrobot.com/jsonrpc/` for testing. Default: `https://api.domrobot.com/jsonrpc/`
-* `username` - (Required) Login username of the api
-* `password` - (Required) Login password of the api
-* `tan` - (Optional) [mobile tan](https://www.inwx.com/en/offer/mobiletan)
+* `api_url` - (Optional) URL of the RPC API endpoint. Use `https://api.domrobot.com/jsonrpc/` for production and `https://api.ote.domrobot.com/jsonrpc/` for testing. Default: `https://api.domrobot.com/jsonrpc/`. Can be passed as `INWX_API_URL` env var.
+* `username` - (Required) Login username of the api. Can be passed as `INWX_USERNAME` env var.
+* `password` - (Required) Login password of the api. Can be passed as `INWX_PASSWORD` env var.
+* `tan` - (Optional) [mobile tan](https://www.inwx.com/en/offer/mobiletan). Can be passed as `INWX_TAN` env var.
