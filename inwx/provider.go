@@ -18,27 +18,31 @@ func Provider() *schema.Provider {
 			"api_url": {
 				Type: schema.TypeString,
 				Description: "URL of the RPC API endpoint. Use `https://api.domrobot.com/jsonrpc/` " +
-					"for production and `https://api.ote.domrobot.com/jsonrpc/` for tests",
-				Optional: true,
-				Default:  "https://api.domrobot.com/jsonrpc/",
+					"for production and `https://api.ote.domrobot.com/jsonrpc/` for tests. " +
+					"Can be passed as `INWX_API_URL` env var.",
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("INWX_API_URL", "https://api.domrobot.com/jsonrpc/"),
 			},
 			"username": {
 				Type:        schema.TypeString,
-				Description: "Login username of the api",
+				Description: "Login username of the api. Can be passed as `INWX_USERNAME` env var.",
 				Required:    true,
 				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("INWX_USERNAME", nil),
 			},
 			"password": {
 				Type:        schema.TypeString,
-				Description: "Login password of the api",
+				Description: "Login password of the api. Can be passed as `INWX_PASSWORD` env var.",
 				Required:    true,
 				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("INWX_PASSWORD", nil),
 			},
 			"tan": {
 				Type:        schema.TypeString,
-				Description: "Mobile-TAN to unlock account",
+				Description: "Mobile-TAN to unlock account. Can be passed as `INWX_TAN` env var.",
 				Optional:    true,
 				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("INWX_TAN", nil),
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
