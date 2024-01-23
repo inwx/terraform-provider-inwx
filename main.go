@@ -21,6 +21,7 @@ func main() {
 		ProviderFunc: func() *schema.Provider {
 			return inwx.Provider()
 		},
+		ProviderAddr: "inwx/inwx",
 	}
 
 	plugin.Serve(opts)
