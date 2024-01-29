@@ -50,6 +50,7 @@ func Provider() *schema.Provider {
 			"inwx_domain_contact":    resource.DomainContactResource(),
 			"inwx_dnssec_key":        resource.DNSSECKeyResource(),
 			"inwx_nameserver_record": resource.NameserverRecordResource(),
+			"inwx_automated_dnssec":  resource.AutomatedDNSSECResource(),
 			"inwx_nameserver":        resource.NameserverResource(),
 		},
 		ConfigureContextFunc: configureContext,
