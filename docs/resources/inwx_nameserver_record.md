@@ -1,6 +1,6 @@
 # Resource: inwx_nameserver_record
 
-Provides a INWX nameserver record resource
+Provides a INWX nameserver record resource. A zone has to exist to add records to it. The zone can be created with [inwx_nameserver](inwx_nameserver.md).
 
 ## Example Usage
 

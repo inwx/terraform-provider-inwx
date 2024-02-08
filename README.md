@@ -13,6 +13,8 @@ Documentation
 ------
 You can find a detailed description of the provider and all resources under [docs/](docs/) or at https://registry.terraform.io/providers/inwx/inwx/.
 
+If you still experience any kind of problems don't hesitate to contact our [support via email](mailto:support@inwx.de).
+
 -------
 
 License

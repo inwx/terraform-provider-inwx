@@ -1,6 +1,6 @@
 # Resource: inwx_domain
 
-Provides a INWX domain resource
+Provides a INWX domain resource.
 
 ## Example Usage
 
@@ -8,6 +8,7 @@ Provides a INWX domain resource
 resource "inwx_domain" "example_com" {
   name = "example.com"
   nameservers = [
+    // if you want to use inwx ns, create a zone with inwx_nameserver
     "ns.inwx.de",
     "ns2.inwx.de"
   ]
@@ -21,8 +22,10 @@ resource "inwx_domain" "example_com" {
     billing  = 2147483647 // id of contact
   }
   extra_data = {
-    // Enable e.g. whois protection
-    "WHOIS-PROTECTION": "1" // 1 == bool true
+    // Enable whois proxy, trustee or provide data like company number if needed
+    //"WHOIS-PROTECTION": "1",
+    //"ACCEPT-TRUSTEE-TAC": "1",
+    //"COMPANY-NUMBER": "123",
   }
 }
 ```
@@ -45,6 +48,7 @@ resource "inwx_domain_contact" "example_person" {
 resource "inwx_domain" "example_com" {
   name = "example.com"
   nameservers = [
+    // if you want to use inwx ns, create a zone with inwx_nameserver
     "ns.inwx.de",
     "ns2.inwx.de"
   ]
@@ -59,8 +63,10 @@ resource "inwx_domain" "example_com" {
     billing  = inwx_domain_contact.example_person.id
   }
   extra_data = {
-    // Enable e.g. whois protection
-    "WHOIS-PROTECTION": "1" // 1 == bool true
+    // Enable whois proxy, trustee or provide data like company number if needed
+    //"WHOIS-PROTECTION": "1",
+    //"ACCEPT-TRUSTEE-TAC": "1",
+    //"COMPANY-NUMBER": "123",
   }
 }
 ```

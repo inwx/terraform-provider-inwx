@@ -1,10 +1,11 @@
 # Resource: inwx_nameserver
 
-Provides a INWX nameserver zone resource
+Provides a INWX nameserver zone resource on the anycast nameserver network (50+ locations worldwide). Needed if you use INWX nameservers for [inwx_domain](inwx_domain.md). Use [inwx_nameserver_record](inwx_nameserver_record.md) to create records in the zone.
 
 ## Example Usage
 
 ```terraform
+// primary
 resource "inwx_nameserver" "example_com_nameserver" {
   domain = "example.com"
   type = "MASTER"
@@ -12,6 +13,13 @@ resource "inwx_nameserver" "example_com_nameserver" {
     "ns.inwx.de",
     "ns2.inwx.de"
   ]
+}
+
+// or secondary
+resource "inwx_nameserver" "example_com_nameserver" {
+  domain = "example.com"
+  type = "SLAVE"
+  master_ip = "1.2.3.4"
 }
 ```
 
@@ -34,7 +42,7 @@ resource "inwx_nameserver" "example_com_nameserver" {
 
 ## Import
 
-INWX nameserver records can be imported using the `id`, e.g.,
+INWX nameserver zones can be imported using the `id`, e.g.,
 
 ```
 $ terraform import inwx_nameserver example.com:2147483647

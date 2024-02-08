@@ -1,6 +1,6 @@
 # Resource: inwx_dnssec_key
 
-Provides a INWX DNSSEC key resource
+Provides a INWX DNSSEC key resource. This will send your dnssec keys to the domain registry. If you use INWX nameservers, use [inwx_automated_dnssec](inwx_automated_dnssec.md) instead, and INWX will create and manage the keys.
 
 ## Example Usage
 
@@ -26,8 +26,6 @@ INWX DNSSEC keys can be imported using the domain name and digest e.g.,
 $ terraform import inwx_dnssec_key.example_com example.com/4E1243BD22C66E76C2BA9EDDC1F91394E57F9F83
 ```
 
-## Caveats
+## CDS / CDNSKEY
 
-### Nameservers
-
-Can not be used in conjunction with INWX nameservers.
+INWX supports CDS for .ch, .li, .se, .nu. If you use this record we will import your keys automatically after a few days.

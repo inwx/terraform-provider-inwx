@@ -1,6 +1,6 @@
 # Resource: inwx_domain_contact
 
-Provides a INWX domain contact resource
+Provides a INWX domain contact resource. Needed for [inwx_domain](inwx_domain.md).
 
 ## Example Usage
 
