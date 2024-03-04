@@ -105,6 +105,14 @@ resource "inwx_dnssec_key" "example_com" {
   public_key = "ac12c2..."
   algorithm = "SHA256"
 }
+
+// glue record
+resource "inwx_glue_record" "example_com_glue_1" {
+  hostname = "example.com"
+  ip = [
+    "192.168.0.1"
+  ]
+}
 ```
 
 For additional examples and information, please check the linked resource documentations above.
