@@ -23,11 +23,11 @@ resource "inwx_glue_record" "example_com_glue_1" {
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - Id of the nameserver record
+* `id` - Id of the glue record
 
 ## Import
 
-INWX nameserver records can be imported using the `id`, e.g.,
+INWX glue records can be imported using the `id`, e.g.,
 
 ```
 $ terraform import inwx_glue_record example.com:2147483647
