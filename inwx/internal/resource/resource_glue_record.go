@@ -76,7 +76,7 @@ func resourceGlueRecordCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	parameters := map[string]interface{}{
 		"hostname": hostname,
-		"ip":       d.Get("ip").(string),
+		"ip":       d.Get("ip").(*schema.Set).List(),
 	}
 
 	if testing, ok := d.GetOk("testing"); ok {
@@ -145,7 +145,7 @@ func resourceGlueRecordRead(ctx context.Context, d *schema.ResourceData, m inter
 			d.Set("ro_id", d.Get("ro_id").(string))
 			d.Set("hostname", d.Get("hostname").(string))
 			d.Set("status", recordt["status"].(string))
-			d.Set("ip", recordt["ip"].(string))
+			d.Set("ip", recordt["ip"].(*schema.Set).List())
 		}
 	}
 
@@ -168,7 +168,7 @@ func resourceGlueRecordUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	parameters := map[string]interface{}{
 		"roId": id,
-		"ip":   d.Get("ip").(string),
+		"ip":   d.Get("ip").(*schema.Set).List(),
 	}
 
 	if d.HasChange("hostname") {
@@ -213,7 +213,7 @@ func resourceGlueRecordDelete(ctx context.Context, d *schema.ResourceData, m int
 		parameters["hostname"] = hostname
 	}
 	if testing, ok := d.GetOk("testing"); ok {
-		parameters["roId"] = testing
+		parameters["testing"] = testing
 	}
 
 	err = client.CallNoResponseBody(ctx, "host.delete", parameters)
