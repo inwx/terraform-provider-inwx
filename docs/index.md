@@ -7,6 +7,7 @@ The INWX Provider can be used to register and manage domains and their domain co
 #### Domains
 - [inwx_domain](resources/inwx_domain.md) - register and manage domains
 - [inwx_domain_contact](resources/inwx_domain_contact.md) - domain contacts, which are needed for [inwx_domain](resources/inwx_domain.md)
+- [inwx_glue_record](resources/inwx_glue_record.md) - register und manage glue records
 
 #### Anycast DNS
 - [inwx_nameserver](resources/inwx_nameserver.md) - zones on the INWX Anycast nameserver network (50+ locations worldwide)
@@ -104,6 +105,14 @@ resource "inwx_dnssec_key" "example_com" {
   domain = "example.com"
   public_key = "ac12c2..."
   algorithm = "SHA256"
+}
+
+// glue record
+resource "inwx_glue_record" "example_com_glue_1" {
+  hostname = "example.com"
+  ip = [
+    "192.168.0.1"
+  ]
 }
 ```
 
