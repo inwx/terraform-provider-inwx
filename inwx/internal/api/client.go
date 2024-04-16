@@ -8,7 +8,6 @@ import (
 	"github.com/go-logr/logr"
 	cookiejar "github.com/orirawlings/persistent-cookiejar"
 	"github.com/pkg/errors"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"sync"
@@ -108,20 +107,14 @@ func (c *Client) _Call(ctx context.Context, method string, parameters map[string
 
 	var response map[string]interface{}
 	if expectResponseBody { // not all requests return a response
-		responseBody, err := ioutil.ReadAll(post.Body)
-		if err != nil {
-			return nil, errors.WithStack(fmt.Errorf("could not read rpc response: %w", err))
-		}
-		fmt.Printf("Response (%s): %s", method, string(responseBody))
-
-		err = json.Unmarshal(responseBody, &response)
+		err = json.NewDecoder(post.Body).Decode(&response)
 		if err != nil {
 			return nil, errors.WithStack(fmt.Errorf("could not unmarshal rpc response to json: %w, %s, %s, %s", err, requestJsonBody, c.BaseURL.String(), post.Status))
 		}
 
 		// Make sure body is valid json before debug message
 		if c.Debug {
-			c.logger.Info(fmt.Sprintf("Request (%s): %s", method, responseBody))
+			c.logger.Info(fmt.Sprintf("Request (%s): %s", method, post.Body))
 		}
 	}
 
