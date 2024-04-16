@@ -8,9 +8,9 @@ import (
 	"github.com/go-logr/logr"
 	cookiejar "github.com/orirawlings/persistent-cookiejar"
 	"github.com/pkg/errors"
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sync"
 )
 
 const (
@@ -40,6 +40,7 @@ type Client struct {
 	Password   string
 	Debug      bool
 	jar        *cookiejar.Jar
+	mu         sync.Mutex
 }
 
 func NewClient(username string, password string, baseURL *url.URL, logger *logr.Logger, debug bool) (*Client, error) {
@@ -60,18 +61,20 @@ func NewClient(username string, password string, baseURL *url.URL, logger *logr.
 	}
 
 	return &Client{
-		httpClient,
-		logger,
-		baseURL,
-		username,
-		password,
-		debug,
-		jar,
+		httpClient: httpClient,
+		logger:     logger,
+		BaseURL:    baseURL,
+		Username:   username,
+		Password:   password,
+		Debug:      debug,
+		jar:        jar,
 	}, nil
 }
 
-
 func (c *Client) _Call(ctx context.Context, method string, parameters map[string]interface{}, expectResponseBody bool) (Response, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	requestBody := map[string]interface{}{}
 	requestBody["method"] = method
 	requestBody["params"] = parameters
@@ -104,21 +107,14 @@ func (c *Client) _Call(ctx context.Context, method string, parameters map[string
 
 	var response map[string]interface{}
 	if expectResponseBody { // not all requests return a response
-		responseBody, err := ioutil.ReadAll(post.Body)
-		if err != nil {
-			return nil, errors.WithStack(fmt.Errorf("could not read rpc response: %w", err))
-		}
-		fmt.Printf("Response (%s): %s", method, string(responseBody))
-
-
-		err = json.Unmarshal(responseBody, &response)
+		err = json.NewDecoder(post.Body).Decode(&response)
 		if err != nil {
 			return nil, errors.WithStack(fmt.Errorf("could not unmarshal rpc response to json: %w, %s, %s, %s", err, requestJsonBody, c.BaseURL.String(), post.Status))
 		}
 
 		// Make sure body is valid json before debug message
 		if c.Debug {
-			c.logger.Info(fmt.Sprintf("Request (%s): %s", method, responseBody))
+			c.logger.Info(fmt.Sprintf("Request (%s): %s", method, post.Body))
 		}
 	}
 
@@ -141,7 +137,7 @@ func (c *Client) Call(ctx context.Context, method string, parameters map[string]
 	return c._Call(ctx, method, parameters, true)
 }
 
-func (c *Client) CallNoResponseBody(ctx context.Context, method string, parameters map[string]interface{}) (error) {
+func (c *Client) CallNoResponseBody(ctx context.Context, method string, parameters map[string]interface{}) error {
 	_, err := c._Call(ctx, method, parameters, false)
 	return err
 }
