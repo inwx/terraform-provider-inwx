@@ -57,6 +57,7 @@ func GlueRecordResource() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Required: true,
 			},
 			"testing": {
 				Description: "Execute command in testing mode",
