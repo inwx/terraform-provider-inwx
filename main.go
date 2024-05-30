@@ -1,28 +1,63 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/inwx/terraform-provider-inwx/inwx"
+	"log"
 )
 
 // Provider documentation generation.
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name inwx
 
 func main() {
+	ctx := context.Background()
+
 	var debug bool
 
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	opts := &plugin.ServeOpts{
-		Debug: debug,
-		ProviderFunc: func() *schema.Provider {
-			return inwx.Provider()
-		},
-		ProviderAddr: "inwx/inwx",
+	upgradedSdkServer, err := tf5to6server.UpgradeServer(ctx, inwx.Provider().GRPCProvider)
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	plugin.Serve(opts)
+	providers := []func() tfprotov6.ProviderServer{
+		/*
+			providerserver.NewProtocol6(
+				inwx.New()(),
+			),
+		*/
+		func() tfprotov6.ProviderServer {
+			return upgradedSdkServer
+		},
+	}
+
+	muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var serveOpts []tf6server.ServeOpt
+
+	if debug {
+		serveOpts = append(serveOpts, tf6server.WithManagedDebug())
+	}
+
+	err = tf6server.Serve(
+		"registry.terraform.io/inwx/inwx",
+		muxServer.ProviderServer,
+		serveOpts...,
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
