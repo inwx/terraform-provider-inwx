@@ -48,9 +48,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"inwx_domain":            resource.DomainResource(),
 			"inwx_domain_contact":    resource.DomainContactResource(),
-			"inwx_dnssec_key":        resource.DNSSECKeyResource(),
 			"inwx_nameserver_record": resource.NameserverRecordResource(),
-			"inwx_automated_dnssec":  resource.AutomatedDNSSECResource(),
 			"inwx_nameserver":        resource.NameserverResource(),
 			"inwx_glue_record":       resource.GlueRecordResource(),
 		},

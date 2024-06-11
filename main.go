@@ -3,16 +3,27 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	"github.com/inwx/terraform-provider-inwx/internal/provider"
 	"github.com/inwx/terraform-provider-inwx/inwx"
 	"log"
 )
 
 // Provider documentation generation.
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name inwx
+
+var (
+	// these will be set by the goreleaser configuration
+	// to appropriate values for the compiled binary.
+	version string = "dev"
+
+	// goreleaser can pass other information to the main package, such as the specific commit
+	// https://goreleaser.com/cookbooks/using-main.version/
+)
 
 func main() {
 	ctx := context.Background()
@@ -29,11 +40,9 @@ func main() {
 	}
 
 	providers := []func() tfprotov6.ProviderServer{
-		/*
-			providerserver.NewProtocol6(
-				inwx.New()(),
-			),
-		*/
+		providerserver.NewProtocol6(
+			provider.New(version)(),
+		),
 		func() tfprotov6.ProviderServer {
 			return upgradedSdkServer
 		},
