@@ -237,5 +237,6 @@ func (p *inwxProvider) DataSources(context.Context) []func() datasource.DataSour
 func (p *inwxProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewAutomatedDNSSECResource,
+		NewDNSSECKeyResource,
 	}
 }
