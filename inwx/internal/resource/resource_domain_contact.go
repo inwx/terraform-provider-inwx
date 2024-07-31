@@ -242,6 +242,14 @@ func resourceContactRead(ctx context.Context, data *schema.ResourceData, meta in
 		})
 		return diags
 	}
+	if call.Code() != api.COMMAND_SUCCESSFUL && call.Code() != api.COMMAND_SUCCESSFUL_PENDING {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Could not get contact info",
+			Detail:   fmt.Sprintf("API response not status code 1000 or 1001. Got response: %s", call.ApiError()),
+		})
+		return diags
+	}
 
 	contact := expandContactFromInfoResponse(call["resData"].(map[string]interface{})["contact"].(map[string]interface{}))
 
