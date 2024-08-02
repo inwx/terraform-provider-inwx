@@ -303,10 +303,14 @@ func resourceNameserverRecordRead(ctx context.Context, d *schema.ResourceData, m
 			if val, ok := recordt["prio"]; ok {
 				d.Set("prio", val.(float64))
 			}
+
+			return diags
 		}
 	}
 
-	return diags
+	// If the resource is not found, mark it as removed
+	d.SetId("")
+	return nil
 }
 
 func resourceNameserverRecordUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -375,7 +379,7 @@ func resourceNameserverRecordUpdate(ctx context.Context, d *schema.ResourceData,
 		return diags
 	}
 
-	return diags
+	return resourceNameserverRecordRead(ctx, d, m)
 }
 
 func resourceNameserverRecordDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
