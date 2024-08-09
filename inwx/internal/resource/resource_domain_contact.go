@@ -25,7 +25,6 @@ type Contact struct {
 	FaxNumber       string
 	Email           string
 	Remarks         string
-	WhoisProtection bool
 }
 
 func DomainContactResource() *schema.Resource {
@@ -134,13 +133,6 @@ func DomainContactResource() *schema.Resource {
 					return diags
 				},
 			},
-			"whois_protection": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				Description: "Whether whois protection for the contact should be enabled. " +
-					"Depends on the registry supporting it. Not the same as whois protection for a domain",
-			},
 		},
 	}
 }
@@ -161,7 +153,6 @@ func resourceContactCreate(ctx context.Context, data *schema.ResourceData, meta 
 		"cc":         contact.CountryCode,
 		"voice":      contact.PhoneNumber,
 		"email":      contact.Email,
-		"protection": contact.WhoisProtection,
 	}
 	if contact.Organization != "" {
 		parameters["org"] = contact.Organization
@@ -270,7 +261,6 @@ func resourceContactRead(ctx context.Context, data *schema.ResourceData, meta in
 		data.Set("fax", contact.FaxNumber)
 	}
 	data.Set("email", contact.Email)
-	data.Set("whois_protection", contact.WhoisProtection)
 	if contact.Remarks != "" {
 		data.Set("remarks", contact.Remarks)
 	}
@@ -325,9 +315,6 @@ func resourceContactUpdate(ctx context.Context, data *schema.ResourceData, meta 
 	}
 	if data.HasChange("remarks") {
 		parameters["remarks"] = data.Get("remarks")
-	}
-	if data.HasChange("whois_protection") {
-		parameters["protection"] = data.Get("whois_protection")
 	}
 
 	call, err := client.Call(ctx, "contact.update", parameters)
@@ -421,7 +408,6 @@ func expandContactFromResourceData(data *schema.ResourceData) *Contact {
 		FaxNumber:       fax,
 		Email:           data.Get("email").(string),
 		Remarks:         remarks,
-		WhoisProtection: data.Get("whois_protection").(bool),
 	}
 }
 
@@ -443,12 +429,6 @@ func expandContactFromInfoResponse(contactData map[string]interface{}) *Contact 
 		remarks = dataRemarks.(string)
 	}
 
-	// why is this a boolean in a string ffs
-	whoisProtection, err := strconv.ParseBool(contactData["protection"].(string))
-	if err != nil {
-		panic("api error. expected 'protection' boolean string could not be converted to actual boolean value")
-	}
-
 	return &Contact{
 		Type:            contactData["type"].(string),
 		Name:            contactData["name"].(string),
@@ -462,6 +442,5 @@ func expandContactFromInfoResponse(contactData map[string]interface{}) *Contact 
 		FaxNumber:       fax,
 		Email:           contactData["email"].(string),
 		Remarks:         remarks,
-		WhoisProtection: whoisProtection,
 	}
 }
