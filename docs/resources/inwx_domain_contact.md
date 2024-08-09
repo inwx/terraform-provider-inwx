@@ -32,7 +32,6 @@ resource "inwx_domain_contact" "example_person" {
 * `fax` - (Optional) Fax number of the contact
 * `email` - (Required) Contact email address
 * `remarks` - (Optional) Custom description of the contact
-* `whois_protection` - (Optional) Whether whois protection for the contact should be enabled. Depends on the registry supporting it. Not the same as whois protection for a domain
 
 ## Attribute Reference
 
