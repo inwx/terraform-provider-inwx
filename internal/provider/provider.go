@@ -205,7 +205,7 @@ func (p *inwxProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 
 	call, err = client.Call(ctx, "account.info", map[string]interface{}{})
 
-	if call.Code() == 2200 && tan != "" {
+	if call != nil && call.Code() == 2200 && tan != "" {
 		call, err := client.Call(ctx, "account.unlock", map[string]interface{}{
 			"tan": tan,
 		})
@@ -238,5 +238,6 @@ func (p *inwxProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewAutomatedDNSSECResource,
 		NewDNSSECKeyResource,
+		NewGlueRecordResource,
 	}
 }
