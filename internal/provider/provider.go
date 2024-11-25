@@ -240,5 +240,6 @@ func (p *inwxProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewDNSSECKeyResource,
 		NewGlueRecordResource,
 		NewNameserverResource,
+		NewDomainResource,
 	}
 }
