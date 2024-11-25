@@ -242,5 +242,6 @@ func (p *inwxProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewNameserverResource,
 		NewDomainResource,
 		NewDomainContactResource,
+		NewNameserverRecordResource,
 	}
 }
