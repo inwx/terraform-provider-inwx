@@ -2,6 +2,10 @@
 
 package tools
 
+import (
+	_ "github.com/hashicorp/terraform-plugin-docs"
+)
+
 // Format Terraform code for use in documentation.
 // If you do not have Terraform installed, you can remove the formatting command, but it is suggested
 // to ensure the documentation is formatted properly.
