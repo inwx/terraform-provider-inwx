@@ -45,6 +45,7 @@ func (p *inwxProvider) Metadata(_ context.Context, _ provider.MetadataRequest, r
 
 func (p *inwxProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "The INWX Provider can be used to register and manage domains and their domain contacts. Additionally it offers full support for nameserver and DNSSEC management.",
 		Attributes: map[string]schema.Attribute{
 			"api_url": schema.StringAttribute{
 				Description: "URL of the RPC API endpoint. Use `https://api.domrobot.com/jsonrpc/` " +

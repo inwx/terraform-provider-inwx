@@ -35,6 +35,7 @@ func (r *NameserverResource) Schema(_ context.Context, _ resource.SchemaRequest,
 	validUrlRedirectTypes := []string{"HEADER301", "HEADER302", "FRAME"}
 
 	resp.Schema = schema.Schema{
+		Description: "Provides a INWX nameserver zone resource on the anycast nameserver network (50+ locations worldwide). Needed if you use INWX nameservers for inwx_domain. Use inwx_nameserver_record to create records in the zone.",
 		Attributes: map[string]schema.Attribute{
 			"domain": schema.StringAttribute{
 				Description: "Domain name",

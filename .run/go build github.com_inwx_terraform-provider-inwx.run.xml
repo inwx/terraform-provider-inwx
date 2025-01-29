@@ -1,8 +1,12 @@
+<!--
+ Copyright (c) HashiCorp, Inc.
+-->
+
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="go build github.com/inwx/terraform-provider-inwx" type="GoApplicationRunConfiguration" factoryName="Go Application" nameIsGenerated="true">
     <module name="terraform-provider-inwx" />
     <working_directory value="$PROJECT_DIR$" />
-    <go_parameters value="-i -o $ProjectFileDir$/terraform-provider-inwx" />
+    <go_parameters value="-o $ProjectFileDir$/terraform-provider-inwx" />
     <parameters value="--debug" />
     <kind value="PACKAGE" />
     <package value="github.com/inwx/terraform-provider-inwx" />

@@ -59,7 +59,32 @@ func (r *domainResource) Configure(_ context.Context, req resource.ConfigureRequ
 // Schema defines the attributes of the resource.
 func (r *domainResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manage a domain using the INWX API.",
+		Description: `Manage a domain using the INWX API.
+
+## Caveats
+
+### Extra Data
+
+When extra data is set, e.g. ` + "`" + `WHOIS-PROTECTION` + "`" + `, our system sometimes adds other readonly extra data to the domain.
+In this example ` + "`" + `WHOIS-CURRENCY` + "`" + ` is added to the domain. Terraform cannot manage this extra data, so it is recommended
+to ignore these side effects explicitly as they occur:
+
+` + "```" + `terraform
+resource "inwx_domain" "example_com" {
+  // ...
+  extra_data = {
+    "WHOIS-PROTECTION": "1"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      extra_data["WHOIS-CURRENCY"], // ignore WHOIS-CURRENCY
+    ]
+  }
+}
+` + "```" + `
+
+`,
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "Name of the domain.",
@@ -83,12 +108,14 @@ func (r *domainResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Validators: []validator.String{
 					stringvalidator.OneOf(validRenewalModes...),
 				},
-				Default: stringdefault.StaticString("AUTORENEW"),
+				Default:  stringdefault.StaticString("AUTORENEW"),
+				Computed: true,
 			},
 			"transfer_lock": schema.BoolAttribute{
 				Description: "Whether the domain transfer lock should be enabled.",
 				Optional:    true,
 				Default:     booldefault.StaticBool(true),
+				Computed:    true,
 			},
 			"contacts": schema.SingleNestedAttribute{
 				Required:    true,

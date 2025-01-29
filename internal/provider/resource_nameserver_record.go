@@ -41,6 +41,7 @@ func (r *NameserverRecordResource) Schema(_ context.Context, _ resource.SchemaRe
 	}
 
 	resp.Schema = schema.Schema{
+		Description: "Provides a INWX nameserver record resource. A zone has to exist to add records to it. The zone can be created with inwx_nameserver.",
 		Attributes: map[string]schema.Attribute{
 			"domain": schema.StringAttribute{
 				Description: "Domain name",
@@ -69,11 +70,13 @@ func (r *NameserverRecordResource) Schema(_ context.Context, _ resource.SchemaRe
 				Description: "TTL (time to live) of the nameserver record",
 				Optional:    true,
 				Default:     int64default.StaticInt64(3600),
+				Computed:    true,
 			},
 			"prio": schema.Int64Attribute{
 				Description: "Priority of the nameserver record",
 				Optional:    true,
 				Default:     int64default.StaticInt64(0),
+				Computed:    true,
 			},
 			"url_redirect_type": schema.StringAttribute{
 				Description: "Type of the URL redirection. One of: " + strings.Join(validUrlRedirectTypes, ", "),

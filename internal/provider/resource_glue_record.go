@@ -51,6 +51,7 @@ func (r *GlueRecordResource) Configure(_ context.Context, req resource.Configure
 
 func (r *GlueRecordResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Provides a INWX glue record resource.",
 		Attributes: map[string]schema.Attribute{
 			"hostname": schema.StringAttribute{
 				Description: "The name of the host.",

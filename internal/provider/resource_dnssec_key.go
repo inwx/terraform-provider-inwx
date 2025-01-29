@@ -1,3 +1,5 @@
+// Copyright (c) HashiCorp, Inc.
+
 package provider
 
 import (
@@ -58,6 +60,11 @@ func (r *DNSSECKeyResource) Configure(_ context.Context, req resource.ConfigureR
 
 func (r *DNSSECKeyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: `Provides a INWX DNSSEC key resource. This will send your dnssec keys to the domain registry. If you use INWX nameservers, use inwx_automated_dnssec instead, and INWX will create and manage the keys.
+
+## CDS / CDNSKEY
+
+INWX supports CDS for .ch, .li, .se, .nu. If you use this record we will import your keys automatically after a few days.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

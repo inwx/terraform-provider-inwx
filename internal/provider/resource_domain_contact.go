@@ -51,6 +51,7 @@ func (r *domainContactResource) Configure(_ context.Context, req resource.Config
 
 func (r *domainContactResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Provides a INWX domain contact resource. Needed for inwx_domain.",
 		Attributes: map[string]schema.Attribute{
 			"type": schema.StringAttribute{
 				Required:    true,
@@ -113,6 +114,7 @@ func (r *domainContactResource) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 				Description: "Whether whois protection for the contact should be enabled.",
 				Default:     booldefault.StaticBool(true),
+				Computed:    true,
 			},
 		},
 	}
