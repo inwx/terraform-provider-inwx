@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -70,7 +71,10 @@ func (r *NameserverRecordResource) Schema(_ context.Context, _ resource.SchemaRe
 				Description: "TTL (time to live) of the nameserver record",
 				Optional:    true,
 				Default:     int64default.StaticInt64(3600),
-				Computed:    true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(300),
+				},
+				Computed: true,
 			},
 			"prio": schema.Int64Attribute{
 				Description: "Priority of the nameserver record",
