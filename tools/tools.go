@@ -3,7 +3,7 @@
 package tools
 
 import (
-	_ "github.com/hashicorp/terraform-plugin-docs"
+	_ "github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs"
 )
 
 // Format Terraform code for use in documentation.
@@ -12,4 +12,4 @@ import (
 //go:generate terraform fmt -recursive ../examples/
 
 // Generate documentation.
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-dir .. --website-temp-dir /tmp/inwx/
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-dir ..
