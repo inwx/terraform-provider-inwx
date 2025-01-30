@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/api"
 	"strconv"
 	"strings"
@@ -93,10 +94,11 @@ func NameserverRecordResource() *schema.Resource {
 				Optional:    true,
 			},
 			"ttl": {
-				Description: "TTL (time to live) of the nameserver record",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     3600,
+				Description:  "TTL (time to live) of the nameserver record",
+				ValidateFunc: validation.IntAtLeast(300),
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      3600,
 			},
 			"prio": {
 				Description: "Priority of the nameserver record",
