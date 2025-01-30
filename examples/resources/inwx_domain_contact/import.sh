@@ -1,0 +1,1 @@
+terraform import inwx_domain_contact 2147483647

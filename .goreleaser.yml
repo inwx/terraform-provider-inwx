@@ -1,8 +1,11 @@
+# Copyright (c) HashiCorp, Inc.
+
 # Copied from https://github.com/hashicorp/terraform-provider-scaffolding/blob/master/.goreleaser.yml
 # as suggested at https://www.terraform.io/docs/registry/providers/publishing.html#using-goreleaser-locally
 #
 # Visit https://goreleaser.com for documentation on how to customize this
 # behavior.
+version: 2
 before:
   hooks:
     - go mod tidy
@@ -15,6 +18,7 @@ builds:
     ldflags:
       - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
     goos:
+      - freebsd
       - windows
       - linux
       - darwin
@@ -28,7 +32,7 @@ builds:
         goarch: '386'
     binary: '{{ .ProjectName }}_v{{ .Version }}'
 archives:
-  - format: zip
+  - formats: zip
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
@@ -46,7 +50,10 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 release:
+  extra_files:
+    - glob: 'terraform-registry-manifest.json'
+      name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
 # Visit your project's GitHub Releases page to publish this release.
 # draft: false
 changelog:
-  skip: true
+  disable: true
