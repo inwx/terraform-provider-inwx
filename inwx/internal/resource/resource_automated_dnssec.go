@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/api"
@@ -50,7 +51,22 @@ func resourceAutomatedDNSSECRead(ctx context.Context, d *schema.ResourceData, m 
 		return diags
 	}
 
-	records := call["resData"].(map[string]any)["record"].([]any)
+	resData, ok := call["resData"].(map[string]any)
+	if !ok {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Invalid API response format",
+			Detail:   "Expected resData to be a map",
+		})
+		return diags
+	}
+
+	records, ok := resData["record"].([]any)
+	if !ok {
+		// If there's no record, the DNSSEC is not configured
+		d.SetId("")
+		return diags
+	}
 
 	for _, record := range records {
 		recordt := record.(map[string]any)
