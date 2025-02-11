@@ -3,28 +3,29 @@ package resource
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"strconv"
+	"strings"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/api"
-	"reflect"
-	"strconv"
-	"strings"
 )
 
 type Contact struct {
-	Type            string
-	Name            string
-	Organization    string
-	StreetAddress   string
-	City            string
-	PostalCode      string
-	StateProvince   string
-	CountryCode     string
-	PhoneNumber     string
-	FaxNumber       string
-	Email           string
-	Remarks         string
+	Type          string
+	Name          string
+	Organization  string
+	StreetAddress string
+	City          string
+	PostalCode    string
+	StateProvince string
+	CountryCode   string
+	PhoneNumber   string
+	FaxNumber     string
+	Email         string
+	Remarks       string
 }
 
 func DomainContactResource() *schema.Resource {
@@ -144,15 +145,15 @@ func resourceContactCreate(ctx context.Context, data *schema.ResourceData, meta 
 	contact := expandContactFromResourceData(data)
 
 	parameters := map[string]interface{}{
-		"type":       contact.Type,
-		"name":       contact.Name,
-		"street":     contact.StreetAddress,
-		"city":       contact.City,
-		"pc":         contact.PostalCode,
-		"sp":         contact.StateProvince,
-		"cc":         contact.CountryCode,
-		"voice":      contact.PhoneNumber,
-		"email":      contact.Email,
+		"type":   contact.Type,
+		"name":   contact.Name,
+		"street": contact.StreetAddress,
+		"city":   contact.City,
+		"pc":     contact.PostalCode,
+		"sp":     contact.StateProvince,
+		"cc":     contact.CountryCode,
+		"voice":  contact.PhoneNumber,
+		"email":  contact.Email,
 	}
 	if contact.Organization != "" {
 		parameters["org"] = contact.Organization
@@ -187,13 +188,13 @@ func resourceContactCreate(ctx context.Context, data *schema.ResourceData, meta 
 	}
 
 	rawId := call["resData"].(map[string]interface{})["id"]
-	switch rawId.(type) {
+	switch id := rawId.(type) {
 	case string:
 		// When contact already exists: id = string
-		data.SetId(rawId.(string))
+		data.SetId(id)
 	case float64:
 		// When contact does not already exist: id = float64 ...
-		data.SetId(strconv.Itoa(int(rawId.(float64))))
+		data.SetId(strconv.Itoa(int(id)))
 	default:
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -396,18 +397,18 @@ func expandContactFromResourceData(data *schema.ResourceData) *Contact {
 	}
 
 	return &Contact{
-		Type:            data.Get("type").(string),
-		Name:            data.Get("name").(string),
-		Organization:    organization,
-		StreetAddress:   data.Get("street_address").(string),
-		City:            data.Get("city").(string),
-		PostalCode:      data.Get("postal_code").(string),
-		StateProvince:   stateProvince,
-		CountryCode:     data.Get("country_code").(string),
-		PhoneNumber:     data.Get("phone_number").(string),
-		FaxNumber:       fax,
-		Email:           data.Get("email").(string),
-		Remarks:         remarks,
+		Type:          data.Get("type").(string),
+		Name:          data.Get("name").(string),
+		Organization:  organization,
+		StreetAddress: data.Get("street_address").(string),
+		City:          data.Get("city").(string),
+		PostalCode:    data.Get("postal_code").(string),
+		StateProvince: stateProvince,
+		CountryCode:   data.Get("country_code").(string),
+		PhoneNumber:   data.Get("phone_number").(string),
+		FaxNumber:     fax,
+		Email:         data.Get("email").(string),
+		Remarks:       remarks,
 	}
 }
 
@@ -430,17 +431,17 @@ func expandContactFromInfoResponse(contactData map[string]interface{}) *Contact 
 	}
 
 	return &Contact{
-		Type:            contactData["type"].(string),
-		Name:            contactData["name"].(string),
-		Organization:    organization,
-		StreetAddress:   contactData["street"].(string),
-		City:            contactData["city"].(string),
-		PostalCode:      contactData["pc"].(string),
-		StateProvince:   stateProvince,
-		CountryCode:     contactData["cc"].(string),
-		PhoneNumber:     contactData["voice"].(string),
-		FaxNumber:       fax,
-		Email:           contactData["email"].(string),
-		Remarks:         remarks,
+		Type:          contactData["type"].(string),
+		Name:          contactData["name"].(string),
+		Organization:  organization,
+		StreetAddress: contactData["street"].(string),
+		City:          contactData["city"].(string),
+		PostalCode:    contactData["pc"].(string),
+		StateProvince: stateProvince,
+		CountryCode:   contactData["cc"].(string),
+		PhoneNumber:   contactData["voice"].(string),
+		FaxNumber:     fax,
+		Email:         contactData["email"].(string),
+		Remarks:       remarks,
 	}
 }
