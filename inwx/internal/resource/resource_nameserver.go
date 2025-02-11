@@ -3,8 +3,6 @@ package resource
 import (
 	"context"
 	"fmt"
-	"os"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -51,44 +49,6 @@ func NameserverResource() *schema.Resource {
 				}
 				d.SetId(fmt.Sprintf("%s:%s", domain, id))
 
-				// API nameserver.info doesn't return nameservers and soa_mail
-				// so we need to read them from environment variables for a successful import
-				//
-				// Example:
-				// 	INWX_NAMESERVERS="ns1.example.com,ns2.example.com,ns3.example.com"
-				// 	INWX_SOA_MAIL="admin@example.com"
-
-				// Read nameservers from environment variable (comma-separated list)
-				if nsEnv := os.Getenv("INWX_NAMESERVERS"); nsEnv != "" {
-					nameservers := strings.Split(nsEnv, ",")
-					// Convert to []interface{} as required by TypeList
-					nsInterface := make([]interface{}, len(nameservers))
-					for i, ns := range nameservers {
-						ns = strings.TrimSpace(ns)
-						// Validate each nameserver
-						if err := validateFQDN(ns); err != nil {
-							return nil, fmt.Errorf("invalid nameserver '%s': %w", ns, err)
-						}
-						nsInterface[i] = ns
-					}
-					if err := d.Set("nameservers", nsInterface); err != nil {
-						return nil, fmt.Errorf("error setting nameservers: %s", err)
-					}
-				}
-
-				// Read soa_mail from environment variable
-				if soaMail := os.Getenv("INWX_SOA_MAIL"); soaMail != "" {
-					soaMail = strings.TrimSpace(soaMail)
-					// Validate email address
-					if err := validateEmail(soaMail); err != nil {
-						return nil, fmt.Errorf("invalid SOA mail: %w", err)
-					}
-					if err := d.Set("soa_mail", soaMail); err != nil {
-						return nil, fmt.Errorf("error setting soa_mail: %s", err)
-					}
-				}
-
-				// Call read to get the rest of the data
 				diags := resourceNameserverRead(ctx, d, i)
 				if diags.HasError() {
 					return nil, fmt.Errorf("failed to read nameserver data: %v", diags[0].Summary)
@@ -346,6 +306,50 @@ func resourceNameserverRead(ctx context.Context, d *schema.ResourceData, m inter
 			}
 		}
 
+		var nsInterface []interface{}
+		// Check if "record" key exists and is an array
+		if records, ok := resData["record"].([]interface{}); ok {
+			for _, item := range records {
+				// Convert item to a map
+				if recordMap, ok := item.(map[string]interface{}); ok {
+					// Check if "type" is "NS" and get "content"
+					if recordType, ok := recordMap["type"].(string); ok && recordType == "NS" {
+						if content, ok := recordMap["content"].(string); ok {
+							nsInterface = append(nsInterface, content)
+						}
+					}
+					// Check if "type" is "SOA" and get "content"
+					if recordType, ok := recordMap["type"].(string); ok && recordType == "SOA" {
+						if content, ok := recordMap["content"].(string); ok {
+							// soa-content split
+							parts := strings.Fields(content)
+							if len(parts) > 1 {
+								// second part is rname
+								rname := parts[1]
+
+								soaMail := transformRname(rname)
+
+								if err := d.Set("soa_mail", soaMail); err != nil {
+									diags = append(diags, diag.Diagnostic{
+										Severity: diag.Error,
+										Summary:  fmt.Sprintf("Could not set %s", rname),
+										Detail:   fmt.Sprintf("Expected %s. %s", rname, err.Error()),
+									})
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		if err := d.Set("nameservers", nsInterface); err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("Could not set nameservers %s", err.Error()),
+				Detail:   fmt.Sprintf("Expected %s. %s", nsInterface, err.Error()),
+			})
+		}
+
 		setValue("domain", "domain")
 		setValue("type", "type")
 		setValue("masterIp", "master_ip")
@@ -379,47 +383,25 @@ func resourceNameserverDelete(ctx context.Context, d *schema.ResourceData, m int
 	return diags
 }
 
+// convert soa rname to email
+func transformRname(rname string) string {
+	// split rname into labels by .
+	labels := strings.Split(rname, ".")
+
+	if len(labels) < 2 {
+		return rname
+	}
+
+	// first part is username the rest is the domain
+	username := labels[0]
+	domain := strings.Join(labels[1:], ".")
+
+	// unescape "\." in username
+	username = strings.ReplaceAll(username, `\.`, ".")
+
+	return username + "@" + domain
+}
+
 func resourceNameserverUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return createOrUpdateNameserver(ctx, d, m, false)
-}
-
-// validateFQDN checks if a string is a valid Fully Qualified Domain Name
-func validateFQDN(fqdn string) error {
-	// Remove trailing dot if present
-	fqdn = strings.TrimSuffix(fqdn, ".")
-
-	// FQDN must not be longer than 255 characters
-	if len(fqdn) > 255 {
-		return fmt.Errorf("FQDN '%s' is too long (max 255 characters)", fqdn)
-	}
-
-	// Split into labels
-	labels := strings.Split(fqdn, ".")
-
-	// Must have at least two labels
-	if len(labels) < 2 {
-		return fmt.Errorf("FQDN '%s' must have at least two parts separated by dots", fqdn)
-	}
-
-	// Validate each label
-	for _, label := range labels {
-		if len(label) == 0 || len(label) > 63 {
-			return fmt.Errorf("FQDN label '%s' must be between 1 and 63 characters", label)
-		}
-		if !regexp.MustCompile(`^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$`).MatchString(label) {
-			return fmt.Errorf("FQDN label '%s' contains invalid characters", label)
-		}
-	}
-
-	return nil
-}
-
-// validateEmail checks if a string is a valid email address
-func validateEmail(email string) error {
-	// Basic email regex pattern
-	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
-	if !emailRegex.MatchString(email) {
-		return fmt.Errorf("invalid email address format: %s", email)
-	}
-	return nil
 }
