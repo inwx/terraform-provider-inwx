@@ -3,13 +3,14 @@ package resource
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/api"
-	"strconv"
-	"strings"
 )
 
 func resourceNameserverRecordParseId(id string) (string, string, error) {
@@ -272,11 +273,14 @@ func resourceNameserverRecordRead(ctx context.Context, d *schema.ResourceData, m
 			d.Set("type", recordt["type"].(string))
 			d.Set("content", recordt["content"].(string))
 
+			// Records like CAA have an empty name, but then the API returns the domain name
+			// It has to be set to nil instead to void unnecessary in-place updates
 			if val, ok := recordt["name"]; ok {
-				d.Set("name", val.(string))
-			}
-			if val, ok := recordt["urlRedirectType"]; ok {
-				d.Set("url_redirect_type", val.(string))
+				if val.(string) == d.Get("domain").(string) {
+					d.Set("name", nil)
+				} else {
+					d.Set("name", val.(string))
+				}
 			}
 			if val, ok := recordt["urlRedirectType"]; ok {
 				d.Set("url_redirect_type", val.(string))
