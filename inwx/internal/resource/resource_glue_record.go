@@ -3,11 +3,12 @@ package resource
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/api"
-	"strconv"
-	"strings"
 )
 
 func resourceGlueRecordParseId(id string) (string, string, error) {
@@ -28,14 +29,13 @@ func GlueRecordResource() *schema.Resource {
 		DeleteContext: resourceGlueRecordDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
-				domain, id, err := resourceGlueRecordParseId(d.Id())
-
+				hostname, id, err := resourceGlueRecordParseId(d.Id())
 				if err != nil {
 					return nil, err
 				}
 
-				d.Set("domain", domain)
-				d.SetId(fmt.Sprintf("%s:%s", domain, id))
+				d.Set("hostname", hostname)
+				d.SetId(fmt.Sprintf("%s:%s", hostname, id))
 
 				return []*schema.ResourceData{d}, nil
 			},
@@ -46,11 +46,6 @@ func GlueRecordResource() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"ro_id": {
-				Description: "Id (Repository Object Identifier) of the hostname",
-				Type:        schema.TypeInt,
-				Required:    true,
-			},
 			"ip": {
 				Description: "Ip address(es)",
 				Type:        schema.TypeList,
@@ -58,6 +53,11 @@ func GlueRecordResource() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Required: true,
+			},
+			"status": {
+				Description: "Status of the hostname",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"testing": {
 				Description: "Execute command in testing mode",
@@ -77,7 +77,7 @@ func resourceGlueRecordCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	parameters := map[string]interface{}{
 		"hostname": hostname,
-		"ip":       d.Get("ip").(*schema.Set).List(),
+		"ip":       d.Get("ip").([]interface{}),
 	}
 
 	if testing, ok := d.GetOk("testing"); ok {
@@ -103,20 +103,30 @@ func resourceGlueRecordCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	resData := call["resData"].(map[string]any)
+	roId := strconv.Itoa(int(resData["roId"].(float64)))
 
-	d.SetId(hostname + ":" + strconv.Itoa(int(resData["roId"].(float64))))
+	d.SetId(fmt.Sprintf("%s:%s", hostname, roId))
 
-	resourceNameserverRecordRead(ctx, d, m)
-
-	return diags
+	return resourceGlueRecordRead(ctx, d, m)
 }
 
 func resourceGlueRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	client := m.(*api.Client)
 
+	hostname, roId, err := resourceGlueRecordParseId(d.Id())
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Could not parse id",
+			Detail:   err.Error(),
+		})
+		return diags
+	}
+
 	parameters := map[string]interface{}{
-		"hostname": d.Get("hostname"),
+		"hostname": hostname,
+		"roId":     roId,
 	}
 
 	call, err := client.Call(ctx, "host.info", parameters)
@@ -137,17 +147,38 @@ func resourceGlueRecordRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diags
 	}
 
-	records := call["resData"].(map[string]any)["record"].([]any)
+	resData, ok := call["resData"].(map[string]any)
+	if !ok {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Could not get glue record info",
+			Detail:   "unexpected response format: missing resData",
+		})
+		return diags
+	}
 
-	for _, record := range records {
-		recordt := record.(map[string]any)
+	// Check if the returned record matches our ID
+	roIdFloat, ok := resData["roId"].(float64)
+	if !ok {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Could not get glue record info",
+			Detail:   "unexpected response format: missing or invalid roId",
+		})
+		return diags
+	}
 
-		if d.Get("hostname").(string)+":"+strconv.Itoa(int(recordt["roId"].(float64))) == d.Id() {
-			d.Set("ro_id", d.Get("ro_id").(string))
-			d.Set("hostname", d.Get("hostname").(string))
-			d.Set("status", recordt["status"].(string))
-			d.Set("ip", recordt["ip"].(*schema.Set).List())
-		}
+	if hostname+":"+strconv.Itoa(int(roIdFloat)) != d.Id() {
+		d.SetId("") // Resource not found
+		return diags
+	}
+
+	d.Set("hostname", resData["hostname"].(string))
+	if status, ok := resData["status"].(string); ok {
+		d.Set("status", status)
+	}
+	if ips, ok := resData["ip"].([]interface{}); ok {
+		d.Set("ip", ips)
 	}
 
 	return diags
@@ -157,7 +188,7 @@ func resourceGlueRecordUpdate(ctx context.Context, d *schema.ResourceData, m int
 	var diags diag.Diagnostics
 	client := m.(*api.Client)
 
-	_, id, err := resourceGlueRecordParseId(d.Id())
+	_, roId, err := resourceGlueRecordParseId(d.Id())
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -168,8 +199,8 @@ func resourceGlueRecordUpdate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	parameters := map[string]interface{}{
-		"roId": id,
-		"ip":   d.Get("ip").(*schema.Set).List(),
+		"roId": roId,
+		"ip":   d.Get("ip").([]interface{}),
 	}
 
 	if d.HasChange("hostname") {
@@ -196,7 +227,7 @@ func resourceGlueRecordDelete(ctx context.Context, d *schema.ResourceData, m int
 	var diags diag.Diagnostics
 	client := m.(*api.Client)
 
-	_, id, err := resourceNameserverRecordParseId(d.Id())
+	hostname, roId, err := resourceGlueRecordParseId(d.Id())
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -207,12 +238,10 @@ func resourceGlueRecordDelete(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	parameters := map[string]interface{}{
-		"roId": id,
+		"hostname": hostname,
+		"roId":     roId,
 	}
 
-	if hostname, ok := d.GetOk("hostname"); ok {
-		parameters["hostname"] = hostname
-	}
 	if testing, ok := d.GetOk("testing"); ok {
 		parameters["testing"] = testing
 	}
