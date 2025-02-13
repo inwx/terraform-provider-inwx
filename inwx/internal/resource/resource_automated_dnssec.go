@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/api"
@@ -21,6 +22,11 @@ func AutomatedDNSSECResource() *schema.Resource {
 				ForceNew:    true,
 			},
 		},
+		Description:        "Manages automated DNSSEC for a domain",
+		DeprecationMessage: "",
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 	}
 }
 
@@ -28,8 +34,16 @@ func resourceAutomatedDNSSECRead(ctx context.Context, d *schema.ResourceData, m 
 	var diags diag.Diagnostics
 	client := m.(*api.Client)
 
+	domain := d.Get("domain").(string)
+	if domain == "" {
+		domain = d.Id()
+		if err := d.Set("domain", domain); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	parameters := map[string]interface{}{
-		"domains": []string{d.Get("domain").(string)},
+		"domains": []string{domain},
 	}
 
 	call, err := client.Call(ctx, "dnssec.info", parameters)
@@ -50,14 +64,34 @@ func resourceAutomatedDNSSECRead(ctx context.Context, d *schema.ResourceData, m 
 		return diags
 	}
 
-	records := call["resData"].(map[string]any)["record"].([]any)
+	resData, ok := call["resData"].(map[string]any)
+	if !ok {
+		d.SetId("") // Clear ID if resData is not found
+		return diags
+	}
 
-	for _, record := range records {
-		recordt := record.(map[string]any)
+	data, ok := resData["data"].([]any)
+	if !ok || len(data) == 0 {
+		d.SetId("") // Clear ID if no data found
+		return diags
+	}
 
-		if recordt["domain"].(string) == d.Get("domain").(string) && recordt["dnssecStatus"].(string) == "AUTO" {
-			d.SetId(recordt["domain"].(string))
+	found := false
+	for _, item := range data {
+		domainInfo, ok := item.(map[string]any)
+		if !ok {
+			continue
 		}
+
+		if domainInfo["domain"].(string) == domain && domainInfo["dnssecStatus"].(string) == "AUTO" {
+			d.SetId(domain)
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		d.SetId("") // Clear ID if no matching record found
 	}
 
 	return diags
@@ -115,7 +149,7 @@ func resourceAutomatedDNSSECDelete(ctx context.Context, d *schema.ResourceData, 
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not disable automated DNSSEC",
-			Detail:   fmt.Sprintf("API response not status code 1000 pr 1001. Got response: %s", call.ApiError()),
+			Detail:   fmt.Sprintf("API response not status code 1000 or 1001. Got response: %s", call.ApiError()),
 		})
 		return diags
 	}
