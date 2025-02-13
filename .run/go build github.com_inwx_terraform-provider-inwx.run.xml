@@ -2,7 +2,6 @@
   <configuration default="false" name="go build github.com/inwx/terraform-provider-inwx" type="GoApplicationRunConfiguration" factoryName="Go Application" nameIsGenerated="true">
     <module name="terraform-provider-inwx" />
     <working_directory value="$PROJECT_DIR$" />
-    <go_parameters value="-i -o $ProjectFileDir$/terraform-provider-inwx -ldflags '-s -w -X github.com/inwx/terraform-provider-inwx/inwx/internal/api.version=test'" />
     <parameters value="--debug" />
     <EXTENSION ID="com.fapiko.jetbrains.plugins.better_direnv.runconfigs.GolandRunConfigurationExtension">
       <option name="DIRENV_ENABLED" value="false" />
@@ -12,7 +11,7 @@
     <package value="github.com/inwx/terraform-provider-inwx" />
     <directory value="$PROJECT_DIR$" />
     <filePath value="$PROJECT_DIR$" />
-    <output_directory value="$PROJECT_DIR$" />
+    <output_directory value="/tmp" />
     <method v="2" />
   </configuration>
 </component>
