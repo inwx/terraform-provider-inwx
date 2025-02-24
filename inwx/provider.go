@@ -3,6 +3,7 @@ package inwx
 import (
 	"context"
 	"fmt"
+	"github.com/inwx/terraform-provider-inwx/inwx/internal/data_source"
 	"net/url"
 
 	"github.com/go-logr/logr"
@@ -53,6 +54,9 @@ func Provider() *schema.Provider {
 			"inwx_automated_dnssec":  resource.AutomatedDNSSECResource(),
 			"inwx_nameserver":        resource.NameserverResource(),
 			"inwx_glue_record":       resource.GlueRecordResource(),
+		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"inwx_domain_contact": data_source.DomainContactDataSource(),
 		},
 		ConfigureContextFunc: configureContext,
 	}

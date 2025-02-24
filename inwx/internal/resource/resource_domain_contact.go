@@ -207,23 +207,9 @@ func resourceContactCreate(ctx context.Context, data *schema.ResourceData, meta 
 	return diags
 }
 
-func resourceContactRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func AbstractResourceContactRead(ctx context.Context, data *schema.ResourceData, meta interface{}, parameters map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	client := meta.(*api.Client)
-
-	contactId, err := strconv.Atoi(data.Id())
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Could not read numerical contact id",
-			Detail:   err.Error(),
-		})
-		return diags
-	}
-	parameters := map[string]interface{}{
-		"id":   contactId,
-		"wide": 2,
-	}
 
 	call, err := client.Call(ctx, "contact.info", parameters)
 	if err != nil {
@@ -265,8 +251,29 @@ func resourceContactRead(ctx context.Context, data *schema.ResourceData, meta in
 	if contact.Remarks != "" {
 		data.Set("remarks", contact.Remarks)
 	}
+	data.SetId(call["resData"].(map[string]interface{})["contact"].(map[string]interface{})["id"].(string))
 
 	return diags
+}
+
+func resourceContactRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	contactId, err := strconv.Atoi(data.Id())
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Could not read numerical contact id",
+			Detail:   err.Error(),
+		})
+		return diags
+	}
+	parameters := map[string]interface{}{
+		"id":   contactId,
+		"wide": 2,
+	}
+
+	return AbstractResourceContactRead(ctx, data, meta, parameters)
 }
 
 func resourceContactUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
