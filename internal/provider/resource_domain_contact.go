@@ -138,7 +138,7 @@ type domainContactModel struct {
 	WhoisProtection types.Bool   `json:"whois_protection"` // Indicates if WHOIS protection is enabled
 }
 
-func (m domainContactModel) toModel(data map[string]interface{}) domainContactModel {
+func (m domainContactModel) ToModel(data map[string]interface{}) domainContactModel {
 	return domainContactModel{
 		ID:              types.StringValue(data["id"].(string)),
 		Type:            types.StringValue(data["type"].(string)),
@@ -243,7 +243,7 @@ func (r *domainContactResource) Read(ctx context.Context, req resource.ReadReque
 		resp.Diagnostics.AddError("Contact Exapnsion Error", fmt.Sprintf("Failed to expand contact info from response: %s", diags.Errors()))
 		return
 	}
-	data = contact.toModel(call["resData"].(map[string]interface{})["contact"].(map[string]interface{}))
+	data = contact.ToModel(call["resData"].(map[string]interface{})["contact"].(map[string]interface{}))
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)

@@ -232,7 +232,9 @@ func (p *inwxProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 }
 
 func (p *inwxProvider) DataSources(context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewDomainContactDataSource,
+	}
 }
 
 func (p *inwxProvider) Resources(_ context.Context) []func() resource.Resource {
