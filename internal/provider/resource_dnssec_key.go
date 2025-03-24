@@ -356,8 +356,24 @@ func (r *DNSSECKeyResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *DNSSECKeyResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
+func (r *DNSSECKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// NO-OP: Can not update this resource
+	resp.Diagnostics.AddWarning(
+		"No Update Support",
+		"This resource does not support updates. To make changes, please delete and recreate the resource.",
+	)
+
+	// Read the current state into the response's State.
+	var state NameserverResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Set the state back, ensuring nothing has changed.
+	diags = resp.State.Set(ctx, state)
+	resp.Diagnostics.Append(diags...)
 }
 
 func (r *DNSSECKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
