@@ -219,8 +219,62 @@ func (r *NameserverRecordResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 // Update handles the resource update
-func (r *NameserverRecordResource) Update(_ context.Context, _ resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.AddError("Unsupported Operation", "Updating nameserver records is not supported.")
+func (r *NameserverRecordResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Prevent panic if the provider has not been configured.
+	if r.client == nil {
+		resp.Diagnostics.AddError(
+			"Unconfigured HTTP Client",
+			"Expected configured HTTP client. Please report this issue to the provider developers.",
+		)
+		return
+	}
+
+	var plan, state NameserverRecordModel
+
+	// Read the plan (desired state) from Terraform
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Read the current state from Terraform
+	diags = req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	parameters := map[string]interface{}{
+		"domain":  plan.Domain.ValueString(),
+		"type":    plan.Type.ValueString(),
+		"content": plan.Content.ValueString(),
+		"roId":    plan.RoID.ValueInt64(),
+		"name":    plan.Name.ValueString(),
+		"ttl":     plan.TTL.ValueInt64(),
+		"prio":    plan.Priority.ValueInt64(),
+	}
+
+	// Call the client to update the resource
+	call, err := r.client.Call(ctx, "nameserver.updateRecord", parameters)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to update nameserver record",
+			fmt.Sprintf("An error occurred while updating the nameserver record: %s", err.Error()),
+		)
+		return
+	}
+	if call.Code() != api.COMMAND_SUCCESSFUL {
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Unexpected API response: %s", call.ApiError()))
+		return
+	}
+
+	// Update the state with new values
+	diags = resp.State.Set(ctx, plan)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(diags...)
 }
 
 // Delete handles the resource deletion
