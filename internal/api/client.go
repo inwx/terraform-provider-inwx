@@ -10,15 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"net/http"
 	"net/url"
-	"os"
-	"runtime"
 	"sync"
-)
-
-var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
 )
 
 const (
@@ -107,9 +99,6 @@ func (c *Client) _Call(ctx context.Context, method string, parameters map[string
 	}
 	request = request.WithContext(ctx)
 	request.Header.Set("content-type", "application/json; charset=UTF-8")
-	if os.Getenv("INWX_OPTOUT_USERAGENT") == "true" {
-		request.Header.Set("User-Agent", fmt.Sprintf("terraform-provider-inwx/%s (%s; %s; %s) terraform/sdkv2 (+https://terraform.io)", version, runtime.Version(), runtime.GOOS, runtime.GOARCH))
-	}
 
 	post, err := c.httpClient.Do(request)
 	if err != nil {

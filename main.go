@@ -1,14 +1,24 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"github.com/inwx/terraform-provider-inwx/inwx"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/inwx/terraform-provider-inwx/internal/provider"
+	"log"
 )
 
 // Provider documentation generation.
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name inwx
+
+var (
+	// these will be set by the goreleaser configuration
+	// to appropriate values for the compiled binary.
+	version string = "dev"
+
+	// goreleaser can pass other information to the main package, such as the specific commit
+	// https://goreleaser.com/cookbooks/using-main.version/
+)
 
 func main() {
 	var debug bool
@@ -16,13 +26,14 @@ func main() {
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	opts := &plugin.ServeOpts{
-		Debug: debug,
-		ProviderFunc: func() *schema.Provider {
-			return inwx.Provider()
-		},
-		ProviderAddr: "inwx/inwx",
+	serveOpts := providerserver.ServeOpts{
+		Address: "registry.terraform.io/inwx/inwx",
+		Debug:   debug,
+	}
+	err := providerserver.Serve(context.Background(), provider.New(version), serveOpts)
+
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
-	plugin.Serve(opts)
 }
