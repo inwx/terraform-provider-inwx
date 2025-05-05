@@ -119,22 +119,22 @@ resource "inwx_domain" "example_com" {
 			},
 			"contacts": schema.SingleNestedAttribute{
 				Required:    true,
-				Description: "Contacts of the domain.",
+				Description: "Contacts of the domain, depending on tld there might be different contact types that are required.",
 				Attributes: map[string]schema.Attribute{
 					"registrant": schema.Int64Attribute{
-						Description: "ID of the registrant contact.",
+						Description: "ID of the registrant contact is always required.",
 						Required:    true,
 					},
 					"admin": schema.Int64Attribute{
-						Description: "ID of the admin contact.",
+						Description: "ID of the admin contact might be optional depending on the tld. If optional will not be visible in API after creation.",
 						Required:    true,
 					},
 					"tech": schema.Int64Attribute{
-						Description: "ID of the tech contact.",
+						Description: "ID of the tech contact might be optional depending on the tld. If optional will not be visible in API after creation.",
 						Required:    true,
 					},
 					"billing": schema.Int64Attribute{
-						Description: "ID of the billing contact.",
+						Description: "ID of the billing contact might be optional depending on the tld. If optional will not be visible in API after creation.",
 						Required:    true,
 					},
 				},
