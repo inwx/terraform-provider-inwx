@@ -45,7 +45,7 @@ resource "inwx_domain_contact" "example_person" {
 - `fax` (String) Fax number of the contact.
 - `organization` (String) The legal name of the organization. Required for types other than PERSON.
 - `remarks` (String) Custom description of the contact. Max length is 255 characters.
-- `state_province` (String) State or province name of the contact.
+- `state_province` (String) State or province name of the contact, might be required for some tlds.
 - `whois_protection` (Boolean) Whether whois protection for the contact should be enabled.
 
 ## Import
