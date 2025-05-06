@@ -82,7 +82,7 @@ func (r *domainContactResource) Schema(_ context.Context, _ resource.SchemaReque
 			},
 			"state_province": schema.StringAttribute{
 				Optional:    true,
-				Description: "State or province name of the contact.",
+				Description: "State or province name of the contact, might be required for some tlds.",
 			},
 			"country_code": schema.StringAttribute{
 				Required:    true,

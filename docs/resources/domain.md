@@ -97,7 +97,7 @@ resource "inwx_domain" "example_com" {
 
 ### Required
 
-- `contacts` (Attributes) Contacts of the domain. (see [below for nested schema](#nestedatt--contacts))
+- `contacts` (Attributes) Contacts of the domain, depending on tld there might be different contact types that are required. (see [below for nested schema](#nestedatt--contacts))
 - `name` (String) Name of the domain.
 - `period` (String) Registration period of the domain.
 
@@ -113,10 +113,10 @@ resource "inwx_domain" "example_com" {
 
 Required:
 
-- `admin` (Number) ID of the admin contact.
-- `billing` (Number) ID of the billing contact.
-- `registrant` (Number) ID of the registrant contact.
-- `tech` (Number) ID of the tech contact.
+- `admin` (Number) ID of the admin contact might be optional depending on the tld. If optional will not be visible in API after creation.
+- `billing` (Number) ID of the billing contact might be optional depending on the tld. If optional will not be visible in API after creation.
+- `registrant` (Number) ID of the registrant contact is always required.
+- `tech` (Number) ID of the tech contact might be optional depending on the tld. If optional will not be visible in API after creation.
 
 ## Import
 
