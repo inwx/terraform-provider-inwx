@@ -11,7 +11,8 @@ resource "inwx_nameserver" "example_com_nameserver" {
   type = "MASTER"
   nameservers = [
     "ns.inwx.de",
-    "ns2.inwx.de"
+    "ns2.inwx.de",
+    "ns.example.com"
   ]
 }
 
@@ -27,7 +28,7 @@ resource "inwx_nameserver" "example_com_nameserver" {
 
 * `domain` - (Required) Name of the domain
 * `type` - (Required) Type of the nameserver zone. One of: `MASTER`, `SLAVE`
-* `nameservers` - (Required) List of nameservers
+* `nameservers` - (Required) List of nameservers, this can be an inwx nameserver or an external nameserver.
 * `master_ip` - (Optional) Master IP address
 * `web` - (Optional) Web nameserver entry
 * `mail` - (Optional) Mail nameserver entry
