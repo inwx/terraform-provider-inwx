@@ -16,7 +16,7 @@ resource "inwx_nameserver_record" "example_com_txt_1" {
 
 * `domain` - (Required) Name of the domain
 * `type` - (Required) Type of the nameserver record. One of: `A`, `AAAA`, `AFSDB`, `ALIAS`, `CAA`, `CERT`, `CNAME`, 
-`HINFO`, `KEY`, `LOC`, `MX`, `NAPTR`, `NS`, `OPENPGPKEY`, `PTR`, `RP`, `SMIMEA`, `SOA`, `SRV`, `SSHFP`, `TLSA`, `TXT`, 
+`HINFO`, `LOC`, `MX`, `NAPTR`, `NS`, `OPENPGPKEY`, `PTR`, `RP`, `SMIMEA`, `SOA`, `SRV`, `SSHFP`, `TLSA`, `TXT`, 
 `URI`, `URL`
 * `ro_id` - (Optional) DNS domain id
 * `content` - (Required) Content of the nameserver record
