@@ -25,8 +25,8 @@ func resourceNameserverRecordParseId(id string) (string, string, error) {
 
 func NameserverRecordResource() *schema.Resource {
 	validRecordTypes := []string{
-		"A", "AAAA", "AFSDB", "ALIAS", "CAA", "CERT", "CNAME", "HINFO", "LOC", "MX", "NAPTR", "NS", "OPENPGPKEY",
-		"PTR", "RP", "SMIMEA", "SOA", "SRV", "SSHFP", "TLSA", "TXT", "URI", "URL",
+		"A", "AAAA", "AFSDB", "ALIAS", "CAA", "CERT", "CNAME", "HINFO", "HTTPS", "IPSECKEY", "LOC", "MX", "NAPTR", "NS", "OPENPGPKEY",
+		"PTR", "RP", "SMIMEA", "SOA", "SRV", "SSHFP", "SVCB", "TLSA", "TXT", "URI", "URL",
 	}
 
 	validUrlRedirectTypes := []string{
