@@ -26,7 +26,7 @@ resource "inwx_domain_contact" "example_person" {
 * `street_address` - (Required) Street Address of the contact
 * `city` - (Required) City of the contact
 * `postal_code` - (Required) Postal Code/Zipcode of the contact
-* `state_province` - (Optional) State/Province name of the contact
+* `state_province` - (Optional) State/Province name of the contact. Required for certain TLDs
 * `country_code` - (Required) Country code of the contact. Must be two characters
 * `phone_number` - (Required) Phone number of the contact
 * `fax` - (Optional) Fax number of the contact
