@@ -83,6 +83,9 @@ resource "inwx_domain" "example_com" {
 
 ### Nested Fields
 
+Depending on the TLD, the following can be optional and will thus not be shown in the api after creation.
+Registrant will always be required.
+
 `contacts`
 * `registrant` - (Required) Id of the registrant contact
 * `admin` - (Required) Id of the admin contact

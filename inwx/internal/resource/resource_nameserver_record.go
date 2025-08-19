@@ -3,13 +3,14 @@ package resource
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/api"
-	"strconv"
-	"strings"
 )
 
 func resourceNameserverRecordParseId(id string) (string, string, error) {
@@ -24,8 +25,8 @@ func resourceNameserverRecordParseId(id string) (string, string, error) {
 
 func NameserverRecordResource() *schema.Resource {
 	validRecordTypes := []string{
-		"A", "AAAA", "AFSDB", "ALIAS", "CAA", "CERT", "CNAME", "HINFO", "KEY", "LOC", "MX", "NAPTR", "NS", "OPENPGPKEY",
-		"PTR", "RP", "SMIMEA", "SOA", "SRV", "SSHFP", "TLSA", "TXT", "URI", "URL",
+		"A", "AAAA", "AFSDB", "ALIAS", "CAA", "CERT", "CNAME", "HINFO", "HTTPS", "IPSECKEY", "LOC", "MX", "NAPTR", "NS", "OPENPGPKEY",
+		"PTR", "RP", "SMIMEA", "SOA", "SRV", "SSHFP", "SVCB", "TLSA", "TXT", "URI", "URL",
 	}
 
 	validUrlRedirectTypes := []string{
