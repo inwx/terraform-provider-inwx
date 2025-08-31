@@ -5,14 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-logr/logr"
-	cookiejar "github.com/orirawlings/persistent-cookiejar"
-	"github.com/pkg/errors"
 	"net/http"
 	"net/url"
 	"os"
 	"runtime"
 	"sync"
+
+	"github.com/go-logr/logr"
+	cookiejar "github.com/orirawlings/persistent-cookiejar"
+	"github.com/pkg/errors"
 )
 
 var (

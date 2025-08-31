@@ -3,8 +3,9 @@ package inwx
 import (
 	"context"
 	"fmt"
-	"github.com/inwx/terraform-provider-inwx/inwx/internal/data_source"
 	"net/url"
+
+	"github.com/inwx/terraform-provider-inwx/inwx/internal/data_source"
 
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
