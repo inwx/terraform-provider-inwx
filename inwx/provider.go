@@ -3,8 +3,9 @@ package inwx
 import (
 	"context"
 	"fmt"
-	"github.com/inwx/terraform-provider-inwx/inwx/internal/data_source"
 	"net/url"
+
+	"github.com/inwx/terraform-provider-inwx/inwx/internal/data_source"
 
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -72,7 +73,7 @@ func configureContext(ctx context.Context, data *schema.ResourceData) (interface
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not configure context",
-			Detail:   fmt.Sprintf("Could not parse api_url: %w", err),
+			Detail:   fmt.Sprintf("Could not parse api_url: %v", err),
 		})
 		return nil, diags
 	}
@@ -83,7 +84,7 @@ func configureContext(ctx context.Context, data *schema.ResourceData) (interface
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not configure context",
-			Detail:   fmt.Sprintf("Could not create http client: %w", err),
+			Detail:   fmt.Sprintf("Could not create http client: %v", err),
 		})
 		return nil, diags
 	}
@@ -97,7 +98,7 @@ func configureContext(ctx context.Context, data *schema.ResourceData) (interface
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not configure context",
-			Detail:   fmt.Sprintf("Could not authenticate at api via account.login: %w", err),
+			Detail:   fmt.Sprintf("Could not authenticate at api via account.login: %v", err),
 		})
 		return nil, diags
 	}
@@ -121,7 +122,7 @@ func configureContext(ctx context.Context, data *schema.ResourceData) (interface
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  "Could not unlock account",
-				Detail:   fmt.Sprintf("Could not authenticate at api via account.unlock: %w", err),
+				Detail:   fmt.Sprintf("Could not authenticate at api via account.unlock: %v", err),
 			})
 			return nil, diags
 		}

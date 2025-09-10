@@ -34,7 +34,7 @@ func (r Response) Code() float64 {
 func (r Response) ApiError() string {
 	jsonStr, err := json.Marshal(r)
 	if err != nil {
-		return fmt.Sprintf("could not parse error: %w", err)
+		return fmt.Sprintf("could not parse error: %v", err)
 	}
 	return string(jsonStr)
 }
