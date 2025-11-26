@@ -3,7 +3,6 @@ package resource
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -230,7 +229,7 @@ func resourceNameserverRecordCreate(ctx context.Context, d *schema.ResourceData,
 
 	resData := call["resData"].(map[string]any)
 
-	d.SetId(domain + ":" + strconv.Itoa(int(resData["id"].(float64))))
+	d.SetId(fmt.Sprintf("%v:%v", domain, resData["id"]))
 
 	resourceNameserverRecordRead(ctx, d, m)
 
@@ -268,7 +267,7 @@ func resourceNameserverRecordRead(ctx context.Context, d *schema.ResourceData, m
 	for _, record := range records {
 		recordt := record.(map[string]any)
 
-		if d.Get("domain").(string)+":"+strconv.Itoa(int(recordt["id"].(float64))) == d.Id() {
+		if fmt.Sprintf("%v:%v", d.Get("domain"), recordt["id"]) == d.Id() {
 			d.Set("domain", d.Get("domain").(string))
 			d.Set("type", recordt["type"].(string))
 			d.Set("content", recordt["content"].(string))
