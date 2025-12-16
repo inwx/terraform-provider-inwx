@@ -280,8 +280,10 @@ func resourceNameserverRead(ctx context.Context, d *schema.ResourceData, m inter
 	var diags diag.Diagnostics
 	client := m.(*api.Client)
 
+	domain := d.Get("domain").(string)
+
 	parameters := map[string]interface{}{
-		"domain": d.Get("domain"),
+		"domain": domain,
 	}
 
 	call, err := client.Call(ctx, "nameserver.info", parameters)
@@ -313,9 +315,14 @@ func resourceNameserverRead(ctx context.Context, d *schema.ResourceData, m inter
 				// Convert item to a map
 				if recordMap, ok := item.(map[string]interface{}); ok {
 					// Check if "type" is "NS" and get "content"
+					// Only include NS records for the root domain (name is empty or equals the domain)
 					if recordType, ok := recordMap["type"].(string); ok && recordType == "NS" {
-						if content, ok := recordMap["content"].(string); ok {
-							nsInterface = append(nsInterface, content)
+						recordName, _ := recordMap["name"].(string)
+						// Only include root NS records, not delegated subzone NS records
+						if recordName == "" || recordName == domain {
+							if content, ok := recordMap["content"].(string); ok {
+								nsInterface = append(nsInterface, content)
+							}
 						}
 					}
 					// Check if "type" is "SOA" and get "content"
