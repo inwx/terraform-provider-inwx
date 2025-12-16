@@ -158,7 +158,23 @@ func resourceDNSSECKeyRead(ctx context.Context, d *schema.ResourceData, m interf
 		return diags
 	}
 
-	resData := call["resData"].([]interface{})
+	// Safely handle missing or empty resData
+	rawResData, exists := call["resData"]
+	if !exists || rawResData == nil {
+		// Mark resource as deleted (removes it from the Terraform state)
+		d.SetId("")
+		return diags
+	}
+
+	// Cast resData to expected type, with validation
+	resData, ok := rawResData.([]interface{})
+	if !ok || len(resData) == 0 {
+		// Mark resource as deleted if resData is not valid or empty
+		d.SetId("")
+		return diags
+	}
+
+	// Proceed with normal processing
 	key := resData[0].(map[string]interface{})
 
 	d.SetId(key["id"].(string))
