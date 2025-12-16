@@ -118,7 +118,7 @@ func (c *Client) _Call(ctx context.Context, method string, parameters map[string
 	if expectResponseBody { // not all requests return a response
 		err = json.NewDecoder(post.Body).Decode(&response)
 		if err != nil {
-			return nil, errors.WithStack(fmt.Errorf("could not unmarshal rpc response to json: %w, %s, %s, %s", err, requestJsonBody, c.BaseURL.String(), post.Status))
+			return nil, errors.WithStack(fmt.Errorf("could not unmarshal rpc response to json: %w, %s, %s", err, c.BaseURL.String(), post.Status))
 		}
 
 		// Make sure body is valid json before debug message
