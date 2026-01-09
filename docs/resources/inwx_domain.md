@@ -75,11 +75,11 @@ resource "inwx_domain" "example_com" {
 
 * `name` - (Required) Name of the domain
 * `nameservers` - (Required) Set of nameservers of the domain. Min Items: 1
-* `period` - (Required) Registration period of the domain. Valid types: https://www.inwx.de/en/help/apidoc/f/ch03.html#type.period
+* `period` - (Required) Registration period of the domain. Valid types: https://account.inwx.de/en/help/apidoc/f/ch03.html#type.period
 * `renewal_mode` - (Optional) Renewal mode of the domain. One of: `AUTORENEW`, `AUTODELETE`, `AUTOEXPIRE`. Default: `AUTORENEW`
 * `transfer_lock` - (Optional) Whether the domain transfer lock should be enabled. Default: `true`
 * `contacts` - (Required) Contacts of the domain
-* `extra_data` - (Optional) Extra data, needed for some jurisdictions. Valid extra data types: https://www.inwx.de/en/help/apidoc/f/ch03.html#type.extdata
+* `extra_data` - (Optional) Extra data, needed for some jurisdictions. Valid extra data types: https://account.inwx.de/en/help/apidoc/f/ch03.html#type.extdata
 
 ### Nested Fields
 
@@ -88,9 +88,9 @@ Registrant will always be required.
 
 `contacts`
 * `registrant` - (Required) Id of the registrant contact
-* `admin` - (Required) Id of the admin contact
-* `tech` - (Required) Id of the tech contact
-* `billing` - (Required) Id of the billing contact
+* `admin` - (Optional) Id of the admin contact
+* `tech` - (Optional) Id of the tech contact
+* `billing` - (Optional) Id of the billing contact
 
 ## Attribute Reference
 
