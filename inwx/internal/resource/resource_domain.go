@@ -135,11 +135,17 @@ func resourceDomainCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		"ns":           d.Get("nameservers").(*schema.Set).List(),
 		"period":       d.Get("period").(string),
 		"registrant":   contactIds["registrant"],
-		"admin":        contactIds["admin"],
-		"tech":         contactIds["tech"],
-		"billing":      contactIds["billing"],
 		"transferLock": d.Get("transfer_lock").(bool),
 		"renewalMode":  d.Get("renewal_mode").(string),
+	}
+	if admin, ok := contactIds["admin"]; ok && admin.(int) > 0 {
+		parameters["admin"] = admin
+	}
+	if tech, ok := contactIds["tech"]; ok && tech.(int) > 0 {
+		parameters["tech"] = tech
+	}
+	if billing, ok := contactIds["billing"]; ok && billing.(int) > 0 {
+		parameters["billing"] = billing
 	}
 	if extraData, ok := d.GetOk("extra_data"); ok {
 		parameters["extData"] = extraData
@@ -203,10 +209,18 @@ func resourceDomainRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("transfer_lock", resData["transferLock"])
 
 	contacts := map[string]interface{}{}
-	contacts["registrant"] = int(resData["registrant"].(float64))
-	contacts["admin"] = int(resData["admin"].(float64))
-	contacts["tech"] = int(resData["tech"].(float64))
-	contacts["billing"] = int(resData["billing"].(float64))
+	if registrant, ok := resData["registrant"]; ok && registrant != nil {
+		contacts["registrant"] = int(registrant.(float64))
+	}
+	if admin, ok := resData["admin"]; ok && admin != nil {
+		contacts["admin"] = int(admin.(float64))
+	}
+	if tech, ok := resData["tech"]; ok && tech != nil {
+		contacts["tech"] = int(tech.(float64))
+	}
+	if billing, ok := resData["billing"]; ok && billing != nil {
+		contacts["billing"] = int(billing.(float64))
+	}
 
 	d.Set("contacts", schema.NewSet(schema.HashResource(contactsSchemaResource()), []interface{}{contacts}))
 	d.Set("extra_data", resData["extData"])
@@ -245,9 +259,15 @@ func resourceDomainUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	if d.HasChange("contacts") {
 		contacts := d.Get("contacts").(*schema.Set).List()[0].(map[string]interface{})
 		parameters["registrant"] = contacts["registrant"]
-		parameters["admin"] = contacts["admin"]
-		parameters["tech"] = contacts["tech"]
-		parameters["billing"] = contacts["billing"]
+		if admin, ok := contacts["admin"]; ok && admin.(int) > 0 {
+			parameters["admin"] = admin
+		}
+		if tech, ok := contacts["tech"]; ok && tech.(int) > 0 {
+			parameters["tech"] = tech
+		}
+		if billing, ok := contacts["billing"]; ok && billing.(int) > 0 {
+			parameters["billing"] = billing
+		}
 	}
 	if d.HasChange("extra_data") {
 		parameters["extData"] = d.Get("extra_data")
