@@ -88,9 +88,9 @@ Registrant will always be required.
 
 `contacts`
 * `registrant` - (Required) Id of the registrant contact
-* `admin` - (Required) Id of the admin contact
-* `tech` - (Required) Id of the tech contact
-* `billing` - (Required) Id of the billing contact
+* `admin` - (Optional) Id of the admin contact
+* `tech` - (Optional) Id of the tech contact
+* `billing` - (Optional) Id of the billing contact
 
 ## Attribute Reference
 

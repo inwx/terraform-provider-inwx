@@ -3,11 +3,12 @@ package resource
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/api"
-	"strings"
 )
 
 func DomainResource() *schema.Resource {
@@ -105,17 +106,17 @@ func contactsSchemaResource() *schema.Resource {
 			},
 			"admin": {
 				Type:        schema.TypeInt,
-				Required:    true,
+				Optional:    true,
 				Description: "Id of the admin contact",
 			},
 			"tech": {
 				Type:        schema.TypeInt,
-				Required:    true,
+				Optional:    true,
 				Description: "Id of the tech contact",
 			},
 			"billing": {
 				Type:        schema.TypeInt,
-				Required:    true,
+				Optional:    true,
 				Description: "Id of the billing contact",
 			},
 		},
