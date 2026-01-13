@@ -291,8 +291,11 @@ func resourceNameserverRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diags
 	}
 
-	if resData, ok := call["resData"]; ok {
-		resData := resData.(map[string]any)
+	if resDataRaw, ok := call["resData"]; ok {
+		resData, ok := resDataRaw.(map[string]any)
+		if !ok {
+			return diags
+		}
 
 		// Helper function to safely set values
 		setValue := func(key string, field string) {
@@ -308,53 +311,58 @@ func resourceNameserverRead(ctx context.Context, d *schema.ResourceData, m inter
 			}
 		}
 
-		var nsInterface []interface{}
-		// Check if "record" key exists and is an array
-		if records, ok := resData["record"].([]interface{}); ok {
-			for _, item := range records {
-				// Convert item to a map
-				if recordMap, ok := item.(map[string]interface{}); ok {
-					// Check if "type" is "NS" and get "content"
-					// Only include NS records for the root domain (name is empty or equals the domain)
-					if recordType, ok := recordMap["type"].(string); ok && recordType == "NS" {
-						recordName, _ := recordMap["name"].(string)
-						// Only include root NS records, not delegated subzone NS records
-						if recordName == "" || recordName == domain {
-							if content, ok := recordMap["content"].(string); ok {
-								nsInterface = append(nsInterface, content)
+		// SLAVE zones might not have records yet if AXFR hasn't happened.
+		// We skip updating nameservers and soa_mail from records for SLAVE zones
+		// to avoid clearing them if the API returns an empty record list.
+		if d.Get("type").(string) != "SLAVE" {
+			var nsInterface []interface{}
+			// Check if "record" key exists and is an array
+			if records, ok := resData["record"].([]interface{}); ok {
+				for _, item := range records {
+					// Convert item to a map
+					if recordMap, ok := item.(map[string]interface{}); ok {
+						// Check if "type" is "NS" and get "content"
+						// Only include NS records for the root domain (name is empty or equals the domain)
+						if recordType, ok := recordMap["type"].(string); ok && recordType == "NS" {
+							recordName, _ := recordMap["name"].(string)
+							// Only include root NS records, not delegated subzone NS records
+							if recordName == "" || recordName == domain {
+								if content, ok := recordMap["content"].(string); ok {
+									nsInterface = append(nsInterface, content)
+								}
 							}
 						}
-					}
-					// Check if "type" is "SOA" and get "content"
-					if recordType, ok := recordMap["type"].(string); ok && recordType == "SOA" {
-						if content, ok := recordMap["content"].(string); ok {
-							// soa-content split
-							parts := strings.Fields(content)
-							if len(parts) > 1 {
-								// second part is rname
-								rname := parts[1]
+						// Check if "type" is "SOA" and get "content"
+						if recordType, ok := recordMap["type"].(string); ok && recordType == "SOA" {
+							if content, ok := recordMap["content"].(string); ok {
+								// soa-content split
+								parts := strings.Fields(content)
+								if len(parts) > 1 {
+									// second part is rname
+									rname := parts[1]
 
-								soaMail := transformRname(rname)
+									soaMail := transformRname(rname)
 
-								if err := d.Set("soa_mail", soaMail); err != nil {
-									diags = append(diags, diag.Diagnostic{
-										Severity: diag.Error,
-										Summary:  fmt.Sprintf("Could not set %s", rname),
-										Detail:   fmt.Sprintf("Expected %s. %s", rname, err.Error()),
-									})
+									if err := d.Set("soa_mail", soaMail); err != nil {
+										diags = append(diags, diag.Diagnostic{
+											Severity: diag.Error,
+											Summary:  fmt.Sprintf("Could not set %s", rname),
+											Detail:   fmt.Sprintf("Expected %s. %s", rname, err.Error()),
+										})
+									}
 								}
 							}
 						}
 					}
 				}
 			}
-		}
-		if err := d.Set("nameservers", nsInterface); err != nil {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  fmt.Sprintf("Could not set nameservers %s", err.Error()),
-				Detail:   fmt.Sprintf("Expected %s. %s", nsInterface, err.Error()),
-			})
+			if err := d.Set("nameservers", nsInterface); err != nil {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  fmt.Sprintf("Could not set nameservers %s", err.Error()),
+					Detail:   fmt.Sprintf("Expected %s. %s", nsInterface, err.Error()),
+				})
+			}
 		}
 
 		setValue("domain", "domain")
