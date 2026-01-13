@@ -262,10 +262,24 @@ func resourceNameserverRecordRead(ctx context.Context, d *schema.ResourceData, m
 		return diags
 	}
 
-	records := call["resData"].(map[string]any)["record"].([]any)
+	resData, ok := call["resData"].(map[string]any)
+	if !ok {
+		return diags
+	}
+
+	records, ok := resData["record"].([]any)
+	if !ok {
+		// If records are missing, it might be a SLAVE zone that hasn't synced yet.
+		// We don't want to panic. If we were looking for a specific ID and it's not here,
+		// we'll mark it as gone at the end of the function.
+		records = []any{}
+	}
 
 	for _, record := range records {
-		recordt := record.(map[string]any)
+		recordt, ok := record.(map[string]any)
+		if !ok {
+			continue
+		}
 
 		if fmt.Sprintf("%v:%v", d.Get("domain"), recordt["id"]) == d.Id() {
 			d.Set("domain", d.Get("domain").(string))
