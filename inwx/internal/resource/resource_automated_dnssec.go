@@ -83,7 +83,12 @@ func resourceAutomatedDNSSECRead(ctx context.Context, d *schema.ResourceData, m 
 			continue
 		}
 
-		if domainInfo["domain"].(string) == domain && domainInfo["dnssecStatus"].(string) == "AUTO" {
+		domainStr, ok1 := domainInfo["domain"].(string)
+		dnssecStatus, ok2 := domainInfo["dnssecStatus"].(string)
+		if !ok1 || !ok2 {
+			continue
+		}
+		if domainStr == domain && dnssecStatus == "AUTO" {
 			d.SetId(domain)
 			found = true
 			break
