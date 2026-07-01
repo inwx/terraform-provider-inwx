@@ -2,8 +2,14 @@ package inwx
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha1"
+	"encoding/base32"
+	"encoding/binary"
 	"fmt"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/inwx/terraform-provider-inwx/inwx/internal/data_source"
 
@@ -46,6 +52,16 @@ func Provider() *schema.Provider {
 				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("INWX_TAN", nil),
 			},
+			"shared_secret": {
+				Type: schema.TypeString,
+				Description: "Base32-encoded TOTP shared secret for 2FA. " +
+					"The provider computes a fresh TAN from this secret on every login, " +
+					"avoiding the 30-second expiry race between plan and apply. " +
+					"Can be passed as `INWX_SHARED_SECRET` env var.",
+				Optional:    true,
+				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("INWX_SHARED_SECRET", nil),
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"inwx_domain":            resource.DomainResource(),
@@ -61,6 +77,33 @@ func Provider() *schema.Provider {
 		},
 		ConfigureContextFunc: configureContext,
 	}
+}
+
+// generateTOTP computes an RFC 6238 TOTP code (HMAC-SHA1, 30s step, 6 digits)
+// from a base32-encoded shared secret.
+func generateTOTP(secret string) (string, error) {
+	secret = strings.ToUpper(strings.TrimRight(secret, "="))
+	key, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(secret)
+	if err != nil {
+		return "", fmt.Errorf("invalid shared_secret: %v", err)
+	}
+
+	counter := uint64(time.Now().Unix() / 30)
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, counter)
+
+	mac := hmac.New(sha1.New, key)
+	mac.Write(buf)
+	h := mac.Sum(nil)
+
+	offset := h[len(h)-1] & 0x0f
+	code := (uint32(h[offset])&0x7f)<<24 |
+		uint32(h[offset+1])<<16 |
+		uint32(h[offset+2])<<8 |
+		uint32(h[offset+3])
+	code = code % 1_000_000
+
+	return fmt.Sprintf("%06d", code), nil
 }
 
 func configureContext(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
@@ -114,26 +157,43 @@ func configureContext(ctx context.Context, data *schema.ResourceData) (interface
 
 	call, err = client.Call(ctx, "account.info", map[string]interface{}{})
 
-	if tan, ok := data.GetOk("tan"); ok && call.Code() == 2200 && tan != "" {
-		call, err := client.Call(ctx, "account.unlock", map[string]interface{}{
-			"tan": tan,
-		})
-		if err != nil {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Could not unlock account",
-				Detail:   fmt.Sprintf("Could not authenticate at api via account.unlock: %v", err),
-			})
-			return nil, diags
+	if call.Code() == 2200 {
+		var tan string
+		if sharedSecret, ok := data.GetOk("shared_secret"); ok && sharedSecret.(string) != "" {
+			tan, err = generateTOTP(sharedSecret.(string))
+			if err != nil {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Could not generate TOTP",
+					Detail:   fmt.Sprintf("Could not compute TAN from shared_secret: %v", err),
+				})
+				return nil, diags
+			}
+		} else if t, ok := data.GetOk("tan"); ok && t.(string) != "" {
+			tan = t.(string)
 		}
-		if call.Code() != api.COMMAND_SUCCESSFUL {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Could not unlock account",
-				Detail: fmt.Sprintf("Could not authenticate at api via account.unlock. "+
-					"Got response: %s", call.ApiError()),
+
+		if tan != "" {
+			call, err = client.Call(ctx, "account.unlock", map[string]interface{}{
+				"tan": tan,
 			})
-			return nil, diags
+			if err != nil {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Could not unlock account",
+					Detail:   fmt.Sprintf("Could not authenticate at api via account.unlock: %v", err),
+				})
+				return nil, diags
+			}
+			if call.Code() != api.COMMAND_SUCCESSFUL {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Could not unlock account",
+					Detail: fmt.Sprintf("Could not authenticate at api via account.unlock. "+
+						"Got response: %s", call.ApiError()),
+				})
+				return nil, diags
+			}
 		}
 	}
 
