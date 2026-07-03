@@ -33,10 +33,11 @@ terraform {
 
 // API configuration
 provider "inwx" {
-  api_url = "https://api.ote.domrobot.com/jsonrpc/"
-  username = "example-user"
-  password = "redacted"
-  tan = "000000"
+  api_url       = "https://api.ote.domrobot.com/jsonrpc/"
+  username      = "example-user"
+  password      = "redacted"
+  shared_secret = "BASE32ENCODEDSECRET"  # recommended for CI/CD; generates a fresh TAN on every run
+  # tan = "000000"                        # alternative: static one-time TAN (expires after 30s)
 }
 
 // contact used for domains
@@ -123,4 +124,5 @@ For additional examples and information, please check the linked resource docume
 * `api_url` - (Optional) URL of the RPC API endpoint. Use `https://api.domrobot.com/jsonrpc/` for production and `https://api.ote.domrobot.com/jsonrpc/` for testing. Default: `https://api.domrobot.com/jsonrpc/`. Can be passed as `INWX_API_URL` env var.
 * `username` - (Required) Login username of the api. Can be passed as `INWX_USERNAME` env var.
 * `password` - (Required) Login password of the api. Can be passed as `INWX_PASSWORD` env var.
-* `tan` - (Optional) [mobile tan](https://www.inwx.com/en/offer/mobiletan). Can be passed as `INWX_TAN` env var.
+* `shared_secret` - (Optional) Base32-encoded TOTP shared secret for 2FA. The provider computes a fresh TAN from this secret on every login (RFC 6238, HMAC-SHA1, 30s step, 6 digits), so the code is always valid regardless of elapsed time between `plan` and `apply`. **Recommended for CI/CD pipelines.** Can be passed as `INWX_SHARED_SECRET` env var.
+* `tan` - (Optional) [Mobile TAN](https://www.inwx.com/en/offer/mobiletan) to unlock the account. Valid for 30 seconds only — use `shared_secret` instead for automated runs. Can be passed as `INWX_TAN` env var. If both `shared_secret` and `tan` are set, `shared_secret` takes precedence.
