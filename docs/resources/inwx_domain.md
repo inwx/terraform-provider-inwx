@@ -95,6 +95,7 @@ Registrant will always be required.
 ## Attribute Reference
 
 * `id` - Name of the domain
+* `status` - Status of the domain as reported by the API, e.g. `OK`, `EXPIRED`, `DELETED`
 
 ## Import
 
@@ -105,6 +106,15 @@ $ terraform import inwx_domain.example_com "example.com"
 ```
 
 ## Caveats
+
+### Deleted / Expired Domains
+
+If a domain does not exist at INWX anymore (deleted, expired and released, transferred away), the provider no longer
+fails the whole run. `terraform plan`/`apply` emits a warning, removes the resource from the state and plans a
+re-registration. Destroying such a domain also succeeds instead of erroring.
+
+While a domain still exists but is in a non `OK` state, this shows up as drift on the `status` attribute, so you can
+decide what to do with it instead of being blocked.
 
 ### Extra Data
 

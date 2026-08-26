@@ -85,6 +85,11 @@ func DomainResource() *schema.Resource {
 				Elem:        contactsSchemaResource(),
 				Description: "Contacts of the domain",
 			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the domain as reported by the API, e.g. OK, EXPIRED, DELETED",
+			},
 			"extra_data": {
 				Type:        schema.TypeMap,
 				Optional:    true,
@@ -192,6 +197,15 @@ func resourceDomainRead(ctx context.Context, d *schema.ResourceData, meta interf
 		})
 		return diags
 	}
+	if call.Code() == api.OBJECT_DOES_NOT_EXIST {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Domain no longer exists",
+			Detail:   fmt.Sprintf("Domain '%s' does not exist anymore (deleted or expired), removing it from state", d.Id()),
+		})
+		d.SetId("")
+		return diags
+	}
 	if call.Code() != api.COMMAND_SUCCESSFUL {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -207,6 +221,7 @@ func resourceDomainRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("period", resData["period"])
 	d.Set("renewal_mode", resData["renewalMode"])
 	d.Set("transfer_lock", resData["transferLock"])
+	d.Set("status", resData["status"])
 
 	contacts := map[string]interface{}{}
 	if registrant, ok := resData["registrant"]; ok && registrant != nil {
@@ -311,7 +326,8 @@ func resourceDomainDelete(ctx context.Context, d *schema.ResourceData, meta inte
 		})
 		return diags
 	}
-	if call.Code() != api.COMMAND_SUCCESSFUL && call.Code() != api.COMMAND_SUCCESSFUL_PENDING {
+	if call.Code() != api.COMMAND_SUCCESSFUL && call.Code() != api.COMMAND_SUCCESSFUL_PENDING &&
+		call.Code() != api.OBJECT_DOES_NOT_EXIST {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Could not delete domain",
