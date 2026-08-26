@@ -13,3 +13,11 @@ resource "inwx_automated_dnssec" "example_com" {
 ## Argument Reference
 
 * `domain` - (Required) Name of the domain
+
+## Import
+
+INWX automated DNSSEC can be imported using the domain name e.g.,
+
+```
+$ terraform import inwx_automated_dnssec.example_com "example.com"
+```
