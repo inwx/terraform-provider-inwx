@@ -23,6 +23,7 @@ var (
 const (
 	COMMAND_SUCCESSFUL         float64 = 1000
 	COMMAND_SUCCESSFUL_PENDING float64 = 1001
+	OBJECT_DOES_NOT_EXIST      float64 = 2303
 )
 
 type Response map[string]interface{}
